@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-mongodb",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.5",
   "description": "MongoDB provider for Workflow ES",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -17,16 +17,15 @@
     "name": "Daniel Gerlag"
   },
   "license": "MIT",
-
   "devDependencies": {
     "@types/node": "^6.0.51",
     "@types/es6-promise": "0.0.32",
     "typescript": "^2.0.10"
-  },  
-  "dependencies": {    
-    "workflow-es": "1.0.0-beta.1",
+  },
+  "dependencies": {
+    "workflow-es": "^1.0.0-beta.1",
     "es6-promise": "^4.0.5",
-    "mongodb": "^2.2.11"    
+    "mongodb": "^2.2.11"
   },
   "repository": {
     "type": "git",
