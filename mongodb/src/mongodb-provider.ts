@@ -1,4 +1,4 @@
-import { IPersistenceProvider, WorkflowInstance, EventSubscription, EventPublication, WorkflowStatus } from "@workflow/core";
+import { IPersistenceProvider, WorkflowInstance, EventSubscription, EventPublication, WorkflowStatus } from "workflow-es";
 import { MongoClient, ObjectID } from "mongodb";
 
 export class MongoDBPersistence implements IPersistenceProvider {

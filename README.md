@@ -4,10 +4,10 @@ Workflow ES is a light weight workflow engine written in TypeScript, to be run o
 
 ## Installing
 
-Install the core npm package "@workflow/core"
+Install the core npm package "workflow-es"
 
 ```
-npm install @workflow/core --save
+npm install workflow-es --save
 ```
 
 ## Basic Concepts

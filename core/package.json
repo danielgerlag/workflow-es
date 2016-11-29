@@ -1,11 +1,11 @@
 {
-  "name": "@workflow/core",
+  "name": "workflow-es",
   "version": "1.0.0-beta.1",
   "description": "A lightweight workflow engine for Node.JS or the browser",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc",    
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,14 +23,14 @@
   },
 
   "devDependencies": {
-    "@types/node": "^6.0.51",
-    "@types/es6-promise": "0.0.32",
+    "@types/node": "^6.0.51",    
     "typescript": "^2.0.10"
   },
   "peerDependencies": {
     "es6-promise": "^4.0.5"
   },
   "dependencies": {    
+    "@types/es6-promise": "0.0.32",
     "es6-promise": "^4.0.5",
     "underscore": "^1.8.3",
     "uuid": "^3.0.0"

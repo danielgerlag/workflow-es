@@ -5,7 +5,6 @@
         "outDir": "./build",
         "declaration": true,
         "noImplicitAny": false,
-        "allowSyntheticDefaultImports": true,
         "sourceMap": false
     },
     "exclude": [
