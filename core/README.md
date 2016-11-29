@@ -67,7 +67,7 @@ Each running workflow is persisted to the chosen persistence provider between ea
 
 The first time a particular step within the workflow is called, the persistenceData property on the context object is *null*.  The ExecutionResult produced by the *run* method can either cause the workflow to proceed to the next step by providing an outcome value, instruct the workflow to sleep for a defined period or simply not move the workflow forward.  If no outcome value is produced, then the step becomes re-entrant by setting persistenceData, so the workflow host will call this step again in the future buy will popluate the persistenceData with it's previous value.
 
-For example, this step will initially run with *null* persistenceData and put the workflow to sleep for 1 hour, while setting the persistenceData to *true*.  1 hour later, the step will be called again but context.persistenceData will now contain the object constructed in the previous iteration, and will now produce an outcome value of *null*, causing the workflow to move forward.
+For example, this step will initially run with *null* persistenceData and put the workflow to sleep for 1 hour, while setting the persistenceData to *true*.  1 hour later, the step will be called again but context.persistenceData will now contain the value from the previous iteration, and will now produce an outcome value of *null*, causing the workflow to move forward.
 
 ```TypeScript
 class DeferredStep extends StepBody {    
