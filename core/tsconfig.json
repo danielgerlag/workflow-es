@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",        
+        "target": "es5",
+        "outDir": "./build",
+        "declaration": true,
+        "noImplicitAny": false,
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": false
+    },
+    "exclude": [
+        "node_modules"
+    ],
+    "files": [
+        "src/index.ts"
+    ]
+}

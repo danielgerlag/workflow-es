@@ -1,0 +1,31 @@
+{
+  "name": "@workflow/mongodb",
+  "version": "1.0.0-beta.1",
+  "description": "MongoDB provider for Workflow ES",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "workflow",
+    "mongodb"
+  ],
+  "author": {
+    "email": "daniel@gerlag.ca",
+    "name": "Daniel Gerlag"
+  },
+  "license": "MIT",
+
+  "devDependencies": {
+    "@types/node": "^6.0.51",
+    "@types/es6-promise": "0.0.32",
+    "typescript": "^2.0.10"
+  },  
+  "dependencies": {    
+    "@workflow/core": "1.0.0-beta.1",
+    "es6-promise": "^4.0.5",
+    "mongodb": "^2.2.11"    
+  }
+}
