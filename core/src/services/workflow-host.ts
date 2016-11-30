@@ -35,12 +35,13 @@ export class WorkflowHost implements IWorkflowHost {
         this.logger = logger;
     }
 
-    public start(): Promise<void> {
+    public start(): Promise<void> {        
         this.logger.log("Starting workflow host...");
         this.executor = new WorkflowExecutor(this, this.persistence, this.registry, this.logger);
         this.processTimer = setInterval(this.processWorkflowQueue, 500, this);
         this.pollTimer = setInterval(this.pollRunnables, 10000, this);
         this.publishTimer = setInterval(this.processPublicationQueue, 1000, this);
+        this.registerCleanCallbacks();
         return Promise.resolve(undefined);
     }
 
@@ -409,6 +410,22 @@ export class WorkflowHost implements IWorkflowHost {
             resolve();
         });
         return deferred;        
+    }
+
+    private registerCleanCallbacks() {
+        var self = this;
+
+        if (typeof process !== 'undefined' && process) {
+            process.on('SIGINT', () => {
+                self.stop();
+            });
+        }
+
+        if (typeof window !== 'undefined' && window) {
+            window.addEventListener('beforeunload', function(event) {
+                self.stop();
+            });
+        }
     }
 
 }
