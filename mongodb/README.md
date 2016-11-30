@@ -12,11 +12,11 @@ Install the npm package "workflow-es-mongodb"
 
 ## Usage
 
-Use the .usePersisence method when setting up your workflow host.
+Use the .usePersistence() method when setting up your workflow host.
 
 ```TypeScript
 var host = new WorkflowHost();
-host.usePersisence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow"));
+host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow"));
 ...
 host.start();
 ```

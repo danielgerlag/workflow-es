@@ -1,9 +1,7 @@
 import { Promise } from "es6-promise";
 import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
-import { MongoDBPersistence } from "workflow-es-mongodb";
 
-
-class AddNumbers extends StepBody {    
+export class AddNumbers extends StepBody {    
     public number1: number;
     public number2: number;
     public result: number;
@@ -14,23 +12,23 @@ class AddNumbers extends StepBody {
     }
 }
 
-class LogMessage extends StepBody {    
+export class LogMessage extends StepBody {    
     public message: string;    
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
-        console.log(this.message);
+        $("#output").append(this.message + "<br>");
         return ExecutionResult.resolveNext();
     }
 }
 
-class MyDataClass {
+export class MyDataClass {
     public value1: number;
     public value2: number;
     public value3: number;
 }
 
 
-class DataSample_Workflow implements WorkflowBase<MyDataClass> {    
+export class DataSample_Workflow implements WorkflowBase<MyDataClass> {    
     public id: string = "data-sample";
     public version: number = 1;
 
@@ -44,14 +42,3 @@ class DataSample_Workflow implements WorkflowBase<MyDataClass> {
                 .input((step, data) => step.message = "The answer is " + data.value3)
     }
 }
-
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new DataSample_Workflow());
-host.start();
-
-host.startWorkflow("data-sample", 1, { value1: 2, value2: 7 })
-    .then(id => console.log("Started workflow: " + id));
-
-

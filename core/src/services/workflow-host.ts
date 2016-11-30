@@ -27,7 +27,7 @@ export class WorkflowHost implements IWorkflowHost {
         
     }
 
-    public usePersisence(provider: IPersistenceProvider) {
+    public usePersistence(provider: IPersistenceProvider) {
         this.persistence = provider;
     }
 

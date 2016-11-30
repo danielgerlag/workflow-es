@@ -1,0 +1,19 @@
+{
+  "description": "Workflow ES samples for the browser",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "serve"
+  },
+  "devDependencies": {
+    "@types/es6-promise": "0.0.32",
+    "serve": "^1.4.0",
+    "typescript": "^2.0.10"
+  },
+  "dependencies": {
+    "es6-promise": "^4.0.5",
+    "jquery": "^3.1.1",
+    "systemjs": "^0.19.41",
+    "workflow-es": "1.0.0-beta.4"
+  }
+}

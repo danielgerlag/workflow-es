@@ -24,7 +24,7 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
 }
 
 var host = new WorkflowHost();
-//host.usePersisence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
+//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
 //host.useLogger(console);
 host.registerWorkflow(new HelloWorld_Workflow());
 host.start();

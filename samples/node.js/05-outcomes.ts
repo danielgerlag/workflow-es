@@ -29,7 +29,7 @@ class OutcomeSample_Workflow implements WorkflowBase<MyDataClass> {
 }
 
 var host = new WorkflowHost();
-//host.usePersisence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
+//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
 //host.useLogger(console);
 host.registerWorkflow(new OutcomeSample_Workflow());
 host.start();

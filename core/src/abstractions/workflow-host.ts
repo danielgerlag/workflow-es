@@ -4,7 +4,7 @@ import { WorkflowBase, IPersistenceProvider, IQueueProvider, IDistributedLockPro
 
 export interface IWorkflowHost {
 
-    usePersisence(provider: IPersistenceProvider);
+    usePersistence(provider: IPersistenceProvider);
     useLogger(logger: ILogger);
 
     start(): Promise<void>;
