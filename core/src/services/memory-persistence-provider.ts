@@ -12,9 +12,8 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
     
     public createNewWorkflow(instance: WorkflowInstance): Promise<string> {
         var self = this;
-        var deferred = new Promise<string>((resolve, reject) => {
-            var uuid = require("uuid");
-            instance.id = uuid();
+        var deferred = new Promise<string>((resolve, reject) => {            
+            instance.id = this.generateUID();
             self.instances.push(instance);
             resolve(instance.id);
         });
@@ -58,9 +57,8 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
 
     public createEventSubscription(subscription: EventSubscription): Promise<void> {
         var self = this;
-        var deferred = new Promise<void>((resolve, reject) => {
-            var uuid = require("uuid");
-            subscription.id = uuid();
+        var deferred = new Promise<void>((resolve, reject) => {            
+            subscription.id = this.generateUID();
             self.subscriptions.push(subscription);
             resolve();
         });
@@ -112,6 +110,10 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
             resolve();
         });
         return deferred;
+    }
+
+    private generateUID(): string {
+        return (Math.random() * 0x10000000000000).toString(16);
     }
 
 }

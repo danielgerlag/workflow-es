@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-mongodb",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "MongoDB provider for Workflow ES",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -23,7 +23,7 @@
     "typescript": "^2.0.10"
   },
   "dependencies": {
-    "workflow-es": "^1.0.0-beta.1",
+    "workflow-es": "^1.0.0-beta.6",
     "es6-promise": "^4.0.5",
     "mongodb": "^2.2.11"
   },

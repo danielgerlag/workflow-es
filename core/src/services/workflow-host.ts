@@ -116,14 +116,14 @@ export class WorkflowHost implements IWorkflowHost {
         var self = this;
         var deferred = new Promise<void>((resolve, reject) => {
             //todo: check host status        
-            var uuid = require("uuid");
+            
             self.logger.info("Publishing event %s %s", eventName, eventKey);
             self.persistence.getSubscriptions(eventName, eventKey)
                 .then((subs) => {
                     var deferredPubs = []
                     for (let sub of subs) {
                         var pub = new EventPublication();
-                        pub.id = uuid();
+                        pub.id = (Math.random() * 0x10000000000000).toString(16);
                         pub.eventData = eventData;
                         pub.eventKey = eventKey;
                         pub.eventName = eventName;
