@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "6"
+  - "6.1"
+  - "5.11"
+  - "0.6"
+  - "iojs"
+  
+install:
+  - cd core  
+  - npm install
+    
+script:
+  - cd core
+  - npm test
