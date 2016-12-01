@@ -215,6 +215,9 @@ By default, the WorkflowHost service will run as a single node using the built-i
 
 [Deferred execution & re-entrant steps](samples/node.js/06-deferred-steps.ts)
 
+## Status
+
+[![Build Status](https://travis-ci.org/danielgerlag/workflow-es.svg?branch=master)](https://travis-ci.org/danielgerlag/workflow-es)
 
 ## Authors
 
