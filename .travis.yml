@@ -9,7 +9,9 @@ node_js:
 install:
   - cd core  
   - npm install
+  - cd ..
     
 script:
   - cd core
   - npm test
+  - cd ..
