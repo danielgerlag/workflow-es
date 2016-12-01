@@ -22,10 +22,11 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
     
     public persistWorkflow(instance: WorkflowInstance): Promise<void> {
         var self = this;
-        var deferred = new Promise<void>((resolve, reject) => {
+        var deferred = new Promise<void>((resolve, reject) => {            
             var _ = require("underscore");
             var existing = _.findWhere(self.instances, { id: instance.id });
-            existing = instance;
+            var idx = self.instances.indexOf(existing)
+            self.instances[idx] = instance;
             resolve();
         });        
         return deferred;

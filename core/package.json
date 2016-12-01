@@ -5,8 +5,10 @@
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",    
+    "pretest": "npm run build",
+    "prepublish": "npm run build && npm test",
+    "test": "jasmine"
   },
   "keywords": [
     "workflow"
@@ -21,7 +23,10 @@
     "url": "git+https://github.com/danielgerlag/workflow-es.git"
   },
   "devDependencies": {
+    "@types/jasmine": "^2.5.38",
     "@types/node": "^6.0.51",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.4.1",    
     "typescript": "^2.0.10"
   },
   "peerDependencies": {
