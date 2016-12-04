@@ -1,4 +1,5 @@
-# Workflow ES
+# Workflow ES [![Build Status](https://travis-ci.org/danielgerlag/workflow-es.svg?branch=master)](https://travis-ci.org/danielgerlag/workflow-es)
+
 
 Workflow ES is a light weight workflow engine written in TypeScript, to be run on NodeJS or in browser.  It supports pluggable persistence and concurrency providers to allow for multi-node clusters.
 
@@ -215,9 +216,6 @@ By default, the WorkflowHost service will run as a single node using the built-i
 
 [Deferred execution & re-entrant steps](samples/node.js/06-deferred-steps.ts)
 
-## Status
-
-[![Build Status](https://travis-ci.org/danielgerlag/workflow-es.svg?branch=master)](https://travis-ci.org/danielgerlag/workflow-es)
 
 ## Authors
 
