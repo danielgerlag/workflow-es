@@ -3,7 +3,7 @@ import { WorkflowInstance, ExecutionPointer } from "../src/models";
 import { MemoryPersistenceProvider } from "../src/services/memory-persistence-provider";
 
 describe("memory-persistence-provider", () => {
-
+    
     var persistence: IPersistenceProvider = new MemoryPersistenceProvider();
     var wf1: WorkflowInstance;    
 
