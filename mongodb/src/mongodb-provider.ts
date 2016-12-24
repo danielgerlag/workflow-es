@@ -11,7 +11,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     private retryCount: number = 0;
 
     
-    constructor(connectionString: string) {
+    constructor(connectionString: string, connected: () => void = null) {
         var self = this;
         this.connect = new Promise<void>((resolve, reject) => {
             console.log("Connecting to mongo...");
@@ -21,6 +21,8 @@ export class MongoDBPersistence implements IPersistenceProvider {
                 self.workflowCollection = self.db.collection("workflows");
                 self.subscriptionCollection = self.db.collection("subscriptions");
                 self.publishCollection = self.db.collection("unpublished");
+                if (connected)
+                    connected();
             });
         });
         
@@ -49,7 +51,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
         var deferred = new Promise<void>((resolve, reject) => {
             
             var id = ObjectID(instance.id);
-            //delete instance.id;
+            delete instance['_id'];
             self.workflowCollection.findOneAndUpdate({ _id: id }, { $set: instance }, { returnOriginal: false }, 
             (err, r) => {
                 if (err)

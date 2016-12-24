@@ -6,7 +6,9 @@
   "typings": "./build/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "npm run build",
+    "prepublish": "npm run build && npm test",
+    "test": "jasmine"
   },
   "keywords": [
     "workflow",
@@ -20,12 +22,16 @@
   "devDependencies": {
     "@types/node": "^6.0.51",
     "@types/es6-promise": "0.0.32",
+    "@types/jasmine": "^2.5.38",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.4.1",
     "typescript": "^2.0.10"
   },
   "dependencies": {
-    "workflow-es": "^1.0.0-beta.6",
     "es6-promise": "^4.0.5",
-    "mongodb": "^2.2.11"
+    "json-stable-stringify": "^1.0.1",
+    "mongodb": "^2.2.11",
+    "workflow-es": "^1.0.0-beta.6"
   },
   "repository": {
     "type": "git",
