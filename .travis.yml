@@ -1,4 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
 language: node_js
+
 node_js:
   - "6"
   - "6.1"
@@ -9,8 +15,14 @@ install:
   - cd core  
   - npm install
   - cd ..
+  - cd mongodb
+  - npm install
+  - cd ..
     
 script:
   - cd core
+  - npm test
+  - cd ..
+  - cd mongodb
   - npm test
   - cd ..
