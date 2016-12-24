@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "workflow-es": "^1.0.0-beta.6",
-    "workflow-es-mongodb": "^1.0.0-beta.6",
+    "workflow-es-mongodb": "^1.0.0-beta.7",
     "@types/es6-promise": "0.0.32",
     "es6-promise": "^4.0.5",
     "mongodb": "^2.2.11",
