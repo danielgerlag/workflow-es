@@ -1,5 +1,3 @@
-import { Promise } from "es6-promise";
-
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, EventPublication } from "../models";
 import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, IDistributedLockProvider, IWorkflowExecutor, ILogger } from "../abstractions";
 import { WorkflowRegistry } from "./workflow-registry";
@@ -421,11 +419,11 @@ export class WorkflowHost implements IWorkflowHost {
             });
         }
 
-        if (typeof window !== 'undefined' && window) {
-            window.addEventListener('beforeunload', function(event) {
-                self.stop();
-            });
-        }
+        // if (typeof window !== 'undefined' && window) {
+        //     window.addEventListener('beforeunload', function(event) {
+        //         self.stop();
+        //     });
+        // }
     }
 
 }

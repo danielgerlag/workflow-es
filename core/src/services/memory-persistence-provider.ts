@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { IPersistenceProvider } from "../abstractions";
 import { WorkflowInstance, WorkflowStatus, EventSubscription, EventPublication } from "../models";
 

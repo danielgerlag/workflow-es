@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { ExecutionResult, StepExecutionContext } from "../models";
 import { StepBody } from "../abstractions";
 

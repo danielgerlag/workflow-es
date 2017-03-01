@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { IDistributedLockProvider } from "../abstractions";
 
 // Single node in-memory implementation of IDistributedLockProvider (not really distributed)

@@ -1,9 +1,8 @@
-import { Promise } from "es6-promise";
 import { IPersistenceProvider, ILogger, IWorkflowExecutor } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
 import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, SubscriptionStep, SubscriptionStepBody, WorkflowStatus } from "../models";
-
+ 
 var _ = require("underscore");
 
 export class WorkflowExecutor implements IWorkflowExecutor {

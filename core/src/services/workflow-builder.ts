@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { StepBody, InlineStepBody } from "../abstractions";
 import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, SubscriptionStep, SubscriptionStepBody } from "../models";
 

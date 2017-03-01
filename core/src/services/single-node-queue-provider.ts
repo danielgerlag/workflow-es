@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { IQueueProvider } from "../abstractions";
 import { EventPublication } from "../models";
 
