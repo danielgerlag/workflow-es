@@ -6,9 +6,9 @@ services:
 language: node_js
 
 node_js:
+  - "node"
+  - "7"
   - "6"
-  - "6.1"
-  - "5.11"
   - "iojs"
   
 install:
