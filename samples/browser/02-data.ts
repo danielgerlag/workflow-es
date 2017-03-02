@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
 
 export class AddNumbers extends StepBody {    

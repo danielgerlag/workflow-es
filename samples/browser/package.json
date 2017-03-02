@@ -6,14 +6,12 @@
     "start": "serve"
   },
   "devDependencies": {
-    "@types/es6-promise": "0.0.32",
     "serve": "^1.4.0",
-    "typescript": "^2.0.10"
+    "typescript": "^2.2.1"
   },
-  "dependencies": {
-    "es6-promise": "^4.0.5",
+  "dependencies": {    
     "jquery": "^3.1.1",
     "systemjs": "^0.19.41",
-    "workflow-es": "^1.0.0-beta.6"
+    "workflow-es": "^1.0.2"
   }
 }
