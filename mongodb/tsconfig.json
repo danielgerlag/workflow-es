@@ -5,7 +5,10 @@
         "outDir": "./build",
         "declaration": true,
         "noImplicitAny": false,
-        "sourceMap": false
+        "sourceMap": false,
+        "lib": [
+            "es2016"
+        ]
     },
     "exclude": [
         "node_modules"

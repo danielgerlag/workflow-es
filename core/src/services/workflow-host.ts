@@ -56,35 +56,28 @@ export class WorkflowHost implements IWorkflowHost {
             clearInterval(this.publishTimer);
     }
     
-    public startWorkflow(id: string, version: number, data: any = {}): Promise<string> {
-        var self = this;
-        var deferred = new Promise<string>((resolve, reject) => {
+    public async startWorkflow(id: string, version: number, data: any = {}): Promise<string> {
+        var self = this;        
             
-            var def = self.registry.getDefinition(id, version);
-            var wf = new WorkflowInstance();
-            wf.data = data;
-            wf.description = def.description;
-            wf.workflowDefinitionId = def.id;
-            wf.version = def.version;
-            wf.nextExecution = 0;
-            wf.status = WorkflowStatus.Runnable;
-            
-            var ep = new ExecutionPointer();
-            ep.active = true;
-            ep.stepId = def.initialStep;
-            ep.concurrentFork = 1;
-            wf.executionPointers.push(ep);
-            
-            self.persistence.createNewWorkflow(wf)
-                .then((workflowId) => {
-                    self.queueProvider.queueForProcessing(workflowId);
-                    resolve(workflowId);
-                })
-                .catch((error) => {
-                    reject(error);
-                });            
-        });
-        return deferred;
+        var def = self.registry.getDefinition(id, version);
+        var wf = new WorkflowInstance();
+        wf.data = data;
+        wf.description = def.description;
+        wf.workflowDefinitionId = def.id;
+        wf.version = def.version;
+        wf.nextExecution = 0;
+        wf.status = WorkflowStatus.Runnable;
+        
+        var ep = new ExecutionPointer();
+        ep.active = true;
+        ep.stepId = def.initialStep;
+        ep.concurrentFork = 1;
+        wf.executionPointers.push(ep);
+        
+        var workflowId = await self.persistence.createNewWorkflow(wf);
+        self.queueProvider.queueForProcessing(workflowId);
+
+        return workflowId;
     }
     
     
@@ -92,295 +85,231 @@ export class WorkflowHost implements IWorkflowHost {
         this.registry.registerWorkflow<TData>(workflow);
     }
 
-    public subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: string): Promise<void> {
-        var self = this;
-        var deferred = new Promise<void>((resolve, reject) => {
-            self.logger.info("Subscribing to event %s %s for workflow %s step %s", eventName, eventKey, workflowId, stepId);
-            var sub = new EventSubscription();
-            sub.workflowId = workflowId;
-            sub.stepId = stepId;
-            sub.eventName = eventName;
-            sub.eventKey = eventKey;
-            self.persistence.createEventSubscription(sub)
-                .then(() => {
-                    resolve();
-                })
-                .catch(err => reject(err));
-        });
-        return deferred;
+    public async subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: string): Promise<void> {
+        var self = this;        
+        self.logger.info("Subscribing to event %s %s for workflow %s step %s", eventName, eventKey, workflowId, stepId);
+        var sub = new EventSubscription();
+        sub.workflowId = workflowId;
+        sub.stepId = stepId;
+        sub.eventName = eventName;
+        sub.eventKey = eventKey;
+        await self.persistence.createEventSubscription(sub);    
     }
 
-    public publishEvent(eventName: string, eventKey: string, eventData: any): Promise<void> {
+    public async publishEvent(eventName: string, eventKey: string, eventData: any): Promise<void> {
         var self = this;
-        var deferred = new Promise<void>((resolve, reject) => {
-            //todo: check host status        
-            
-            self.logger.info("Publishing event %s %s", eventName, eventKey);
-            self.persistence.getSubscriptions(eventName, eventKey)
-                .then((subs) => {
-                    var deferredPubs = []
-                    for (let sub of subs) {
-                        var pub = new EventPublication();
-                        pub.id = (Math.random() * 0x10000000000000).toString(16);
-                        pub.eventData = eventData;
-                        pub.eventKey = eventKey;
-                        pub.eventName = eventName;
-                        pub.stepId = sub.stepId;
-                        pub.workflowId = sub.workflowId;
-                        
-                        deferredPubs.push(new Promise((resolvePub, rejectPub) => {
-                            self.queueProvider.queueForPublish(pub)
-                                .then(() => {
-                                    self.persistence.terminateSubscription(sub.id)
-                                        .then(() => {
-                                            resolvePub();
-                                        });
-                                })
-                                .catch((err) => {
-                                    self.persistence.createUnpublishedEvent(pub)
-                                        .then(() => {
-                                            self.persistence.terminateSubscription(sub.id)
-                                                .then(() => {
-                                                    resolvePub();
-                                                });
-                                        });
-                                });
-                        }));
-                    }
-                    Promise.all(deferredPubs)
-                        .then(() => {
-                            resolve();
-                        })
-                        .catch((err) => {
-                            reject(err);
-                        });
-                    
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-            
-        });        
-        return deferred;
-    }
+        //todo: check host status        
+    
+        self.logger.info("Publishing event %s %s", eventName, eventKey);
+        var subs = await self.persistence.getSubscriptions(eventName, eventKey);
 
-    public suspendWorkflow(id: string): Promise<boolean> {
-        var self = this;
-        var deferred = new Promise<boolean>((resolve, reject) => {
-            self.lockProvider.aquireLock(id)
-                .then(gotLock  => {
-                    if (gotLock) {                        
-                        self.persistence.getWorkflowInstance(id)
-                            .then((wf) => {
-                                if (wf.status == WorkflowStatus.Runnable) {
-                                    wf.status = WorkflowStatus.Suspended;
-                                    self.persistence.persistWorkflow(wf)
-                                        .then(() => {
-                                            self.lockProvider.releaseLock(id);
-                                            resolve(true);
-                                        })
-                                        .catch(err => {
-                                            self.lockProvider.releaseLock(id);
-                                            reject(err)
-                                        });
-                                }
-                                else
-                                    self.lockProvider.releaseLock(id);
-                            })
-                            .catch(err => {
-                                self.lockProvider.releaseLock(id);
-                                reject(err);
+        var deferredPubs = [];
+        for (let sub of subs) {
+            var pub = new EventPublication();
+            pub.id = (Math.random() * 0x10000000000000).toString(16);
+            pub.eventData = eventData;
+            pub.eventKey = eventKey;
+            pub.eventName = eventName;
+            pub.stepId = sub.stepId;
+            pub.workflowId = sub.workflowId;
+            
+            deferredPubs.push(new Promise((resolvePub, rejectPub) => {
+                self.queueProvider.queueForPublish(pub)
+                    .then(() => {
+                        self.persistence.terminateSubscription(sub.id)
+                            .then(() => {
+                                resolvePub();
                             });
-                    }
-                });
-            
-            resolve(false);    
-        });
-        return deferred;        
-    }
-
-    public resumeWorkflow(id: string): Promise<boolean> {
-        var self = this;
-        var deferred = new Promise<boolean>((resolve, reject) => {
-            self.lockProvider.aquireLock(id)
-                .then(gotLock  => {
-                    if (gotLock) {                        
-                        self.persistence.getWorkflowInstance(id)
-                            .then((wf) => {
-                                if (wf.status == WorkflowStatus.Suspended) {
-                                    wf.status = WorkflowStatus.Runnable;
-                                    self.persistence.persistWorkflow(wf)
-                                        .then(() => {
-                                            self.lockProvider.releaseLock(id);
-                                            resolve(true);
-                                        })
-                                        .catch(err => {
-                                            self.lockProvider.releaseLock(id);
-                                            reject(err)
-                                        });
-                                }
-                                else
-                                    self.lockProvider.releaseLock(id);
-                            })
-                            .catch(err => {
-                                self.lockProvider.releaseLock(id);
-                                reject(err);
-                            });
-                    }
-                });
-            
-            resolve(false);    
-        });
-        return deferred;
-    }
-
-    public terminateWorkflow(id: string): Promise<boolean> {
-        var self = this;
-        var deferred = new Promise<boolean>((resolve, reject) => {
-            self.lockProvider.aquireLock(id)
-                .then(gotLock  => {
-                    if (gotLock) {                        
-                        self.persistence.getWorkflowInstance(id)
-                            .then((wf) => {                                
-                                wf.status = WorkflowStatus.Terminated;
-                                self.persistence.persistWorkflow(wf)
+                    })
+                    .catch((err) => {
+                        self.persistence.createUnpublishedEvent(pub)
+                            .then(() => {
+                                self.persistence.terminateSubscription(sub.id)
                                     .then(() => {
-                                        self.lockProvider.releaseLock(id);
-                                        resolve(true);
-                                    })
-                                    .catch(err => {
-                                        self.lockProvider.releaseLock(id);
-                                        reject(err)
-                                    });                            
-                            })
-                            .catch(err => {
-                                self.lockProvider.releaseLock(id);
-                                reject(err);
+                                        resolvePub();
+                                    });
                             });
-                    }
-                });
+                    });
+            }));
+        }
+        await Promise.all(deferredPubs);
+    }
+
+    public async suspendWorkflow(id: string): Promise<boolean> {
+        var self = this;
+        try {        
+            var result = false;
+            var gotLock = await self.lockProvider.aquireLock(id);
             
-            resolve(false);    
-        });
-        return deferred;
+            if (gotLock) {              
+                try {
+                    var wf = await self.persistence.getWorkflowInstance(id);
+                    if (wf.status == WorkflowStatus.Runnable) {
+                        wf.status = WorkflowStatus.Suspended;
+                        await self.persistence.persistWorkflow(wf);
+                        result = true;
+                    }
+                }   
+                finally {
+                    self.lockProvider.releaseLock(id);
+                }            
+            }
+            return result;
+        }
+        catch (err) {
+            self.logger.error("Error suspending workflow: " + err);
+            return false;
+        }
     }
 
-    private processWorkflowQueue(host: WorkflowHost): Promise<void> {                
-        var deferred = new Promise<void>((resolve, reject) => {
-            host.queueProvider.dequeueForProcessing()
-                .then(workflowId => {
-                    if (workflowId) {
-                        host.logger.log("Dequeued workflow " + workflowId + " for processing");
-                        host.processWorkflow(host, workflowId)
-                            .catch((err) => {
-                                host.logger.error("Error processing workflow", workflowId, err);
-                            });
-                        host.processWorkflowQueue(host);
+    public async resumeWorkflow(id: string): Promise<boolean> {
+        var self = this;
+        try {        
+            var result = false;
+            var gotLock = await self.lockProvider.aquireLock(id);
+            
+            if (gotLock) {              
+                try {
+                    var wf = await self.persistence.getWorkflowInstance(id);
+                    if (wf.status == WorkflowStatus.Suspended) {
+                        wf.status = WorkflowStatus.Runnable;
+                        await self.persistence.persistWorkflow(wf);
+                        result = true;
                     }
-                });
-            resolve();
-        });
-        return deferred;        
+                }   
+                finally {
+                    self.lockProvider.releaseLock(id);
+                }            
+            }
+            return result;
+        }
+        catch (err) {
+            self.logger.error("Error resuming workflow: " + err);
+            return false;
+        }
     }
 
-    private processWorkflow(host: WorkflowHost, workflowId: string): Promise<void> {
-        var deferred = new Promise<void>((resolve, reject) => {
-            host.lockProvider.aquireLock(workflowId)
-                .then(gotLock => {
-                    if (gotLock) {                    
-                        var instance: WorkflowInstance = null;
-                        host.persistence.getWorkflowInstance(workflowId)
-                            .then((instance) => {
-                                if (instance.status == WorkflowStatus.Runnable) {
-                                    host.executor.Execute(instance)
-                                        .then(() => {
-                                            host.lockProvider.releaseLock(workflowId);
-                                            if ((instance.status == WorkflowStatus.Runnable) && (instance.nextExecution !== null)) {
-                                                if (instance.nextExecution < Date.now()) {
-                                                    //host.logger.log("requeue");
-                                                    host.queueProvider.queueForProcessing(workflowId);
-                                                }
-                                            }
-                                        })
-                                        .catch(err => {
-                                            host.lockProvider.releaseLock(workflowId);
-                                            reject(err);
-                                        });
-                                }
-                            })
-                            .catch(err => {
-                                host.lockProvider.releaseLock(workflowId);
-                                reject(err);
-                            });
-                    }
-                    else {
-                        host.logger.log("Workflow locked: " + workflowId);
-                    }
-                    resolve();
-                })
-                .catch(err => reject(err));
-        });        
-        return deferred;
+    public async terminateWorkflow(id: string): Promise<boolean> {
+        var self = this;
+        try {        
+            var result = false;
+            var gotLock = await self.lockProvider.aquireLock(id);
+            
+            if (gotLock) {              
+                try {
+                    var wf = await self.persistence.getWorkflowInstance(id);                    
+                    wf.status = WorkflowStatus.Terminated;
+                    await self.persistence.persistWorkflow(wf);
+                    result = true;                    
+                }   
+                finally {
+                    self.lockProvider.releaseLock(id);
+                }            
+            }
+            return result;
+        }
+        catch (err) {
+            self.logger.error("Error terminating workflow: " + err);
+            return false;
+        }
     }
 
-    private processPublicationQueue(host: WorkflowHost): Promise<void> {
-        var deferred = new Promise<void>((resolve, reject) => {
-            host.queueProvider.dequeueForPublish()
-                .then(pub => {
-                    if (pub) {
-                        host.processPublication(host, pub)
-                            .catch((err) => {
-                                host.logger.error(err);
-                                host.persistence.createUnpublishedEvent(pub);
-                            });
-                        host.processPublicationQueue(host);
+    private async processWorkflowQueue(host: WorkflowHost): Promise<void> {                
+        try {
+            var workflowId = await host.queueProvider.dequeueForProcessing();
+            if (workflowId) {
+                host.logger.log("Dequeued workflow " + workflowId + " for processing");
+                host.processWorkflow(host, workflowId)
+                    .catch((err) => {
+                        host.logger.error("Error processing workflow", workflowId, err);
+                    });
+                host.processWorkflowQueue(host);
+            }
+        }
+        catch (err) {
+            host.logger.error("Error processing workflow queue: " + err);
+        }            
+    }
+
+    private async processWorkflow(host: WorkflowHost, workflowId: string): Promise<void> {
+        try {
+            var gotLock = await host.lockProvider.aquireLock(workflowId);                
+            if (gotLock) {
+                var complete = false;
+                try {
+                    var instance: WorkflowInstance = await host.persistence.getWorkflowInstance(workflowId);                        
+                    if (instance.status == WorkflowStatus.Runnable) {
+                        await host.executor.Execute(instance);
+                        complete = true;
+                    }                    
+                }
+                finally {
+                    await host.lockProvider.releaseLock(workflowId);
+                    if (complete) {
+                        if ((instance.status == WorkflowStatus.Runnable) && (instance.nextExecution !== null)) {
+                            if (instance.nextExecution < Date.now()) {                                
+                                host.queueProvider.queueForProcessing(workflowId);
+                            }
+                        }
                     }
-                });
-            resolve();
-        });
-        return deferred;
+                }                
+            }
+            else {
+                host.logger.log("Workflow locked: " + workflowId);
+            }   
+        }
+        catch (err) {
+            host.logger.error("Error processing workflow: " + err);
+        }
+    }
+
+    private async processPublicationQueue(host: WorkflowHost): Promise<void> {
+        try {
+            var pub = await host.queueProvider.dequeueForPublish();                
+            if (pub) {
+                host.processPublication(host, pub)
+                    .catch((err) => {
+                        host.logger.error(err);
+                        host.persistence.createUnpublishedEvent(pub);
+                    });
+                host.processPublicationQueue(host);
+            }                 
+        }
+        catch (err) {
+            host.logger.error("Error processing publication queue: " + err);
+        }        
     } 
 
-    private processPublication(host: WorkflowHost, pub: EventPublication): Promise<void> {
-        var deferred = new Promise<void>((resolve, reject) => {
+    private async processPublication(host: WorkflowHost, pub: EventPublication): Promise<void> {
+        try {
             host.logger.log("Publishing event " + pub.eventName + " for " + pub.workflowId);
-            host.lockProvider.aquireLock(pub.workflowId)
-                .then(gotLock => {
-                    if (gotLock) {
-                        host.persistence.getWorkflowInstance(pub.workflowId)
-                            .then((instance) => {
-                                var pointers = instance.executionPointers.filter(ep => ep.eventName == pub.eventName && ep.eventKey == pub.eventKey && !ep.eventPublished);
-                                for (let p of pointers) {
-                                    p.eventData = pub.eventData;
-                                    p.eventPublished = true;
-                                    p.active = true;
-                                }
-                                instance.nextExecution = 0;
-                                host.persistence.persistWorkflow(instance)
-                                    .then(() => {
-                                        host.logger.log("Published event " + pub.eventName + " for " + pub.workflowId);
-                                        host.lockProvider.releaseLock(pub.workflowId)
-                                            .then(() => {
-                                                host.queueProvider.queueForProcessing(pub.workflowId);
-                                            });
-                                    })
-                                    .catch(err => {
-                                        host.lockProvider.releaseLock(pub.workflowId);
-                                        reject(err);
-                                    });
-                            })
-                            .catch(err => {
-                                host.lockProvider.releaseLock(pub.workflowId);
-                                reject(err);
-                            });                
+            var gotLock = await host.lockProvider.aquireLock(pub.workflowId);            
+            if (gotLock) {
+                try {
+                    var instance = await host.persistence.getWorkflowInstance(pub.workflowId);                
+                    var pointers = instance.executionPointers.filter(ep => ep.eventName == pub.eventName && ep.eventKey == pub.eventKey && !ep.eventPublished);
+                    for (let p of pointers) {
+                        p.eventData = pub.eventData;
+                        p.eventPublished = true;
+                        p.active = true;
                     }
-                    else {
-                        host.logger.info("Workflow locked " + pub.workflowId);
-                    }
-                    resolve();
-                });
-        });
-        return deferred;
+                    instance.nextExecution = 0;
+                    await host.persistence.persistWorkflow(instance);
+                        
+                    host.logger.log("Published event " + pub.eventName + " for " + pub.workflowId);
+                }
+                finally {
+                    await host.lockProvider.releaseLock(pub.workflowId);
+                    await host.queueProvider.queueForProcessing(pub.workflowId);
+                }       
+            }
+            else {
+                host.logger.info("Workflow locked " + pub.workflowId);
+            }
+        }
+        catch (err) {
+            host.logger.error("Error processing publication: " + err);
+        }        
     }
 
 

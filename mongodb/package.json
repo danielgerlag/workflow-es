@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-mongodb",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.1",
   "description": "MongoDB provider for Workflow ES",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -21,18 +21,16 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^6.0.51",
-    "@types/es6-promise": "0.0.32",
+    "@types/node": "^6.0.51",    
     "@types/jasmine": "^2.5.38",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.4.1",
     "typescript": "^2.0.10"
   },
   "dependencies": {
-    "es6-promise": "^4.0.5",
     "json-stable-stringify": "^1.0.1",
     "mongodb": "^2.2.11",
-    "workflow-es": "^1.0.0-beta.6"
+    "workflow-es": "^1.0.1"
   },
   "repository": {
     "type": "git",
