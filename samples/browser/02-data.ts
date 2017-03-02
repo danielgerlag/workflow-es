@@ -1,5 +1,7 @@
 import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
 
+import * as $ from 'jquery';
+
 export class AddNumbers extends StepBody {    
     public number1: number;
     public number2: number;

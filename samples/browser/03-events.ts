@@ -1,5 +1,7 @@
 import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
 
+import * as $ from 'jquery';
+
 export class LogMessage extends StepBody {    
     public message: string;    
 
