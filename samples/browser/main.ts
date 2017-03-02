@@ -2,7 +2,7 @@ import { WorkflowHost } from "workflow-es";
 import { HelloWorld_Workflow } from "./01-hello-world";
 import { DataSample_Workflow } from "./02-data";
 import { EventSample_Workflow } from "./03-events";
-
+import * as $ from 'jquery';
 var host = new WorkflowHost();
 //host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
 host.useLogger(console);

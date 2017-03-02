@@ -6,7 +6,11 @@
         "declaration": false,
         "noImplicitAny": false,
         "allowSyntheticDefaultImports": true,        
-        "sourceMap": false
+        "sourceMap": false,
+        "lib": [
+            "es2016",
+            "dom"
+        ]
     },
     "exclude": [
         "node_modules"

@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 import { SelectOutcome, TaskA, TaskB, TaskC, TaskD } from "./05-outcomes.steps";

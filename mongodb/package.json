@@ -1,13 +1,12 @@
 {
   "name": "workflow-es-mongodb",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MongoDB provider for Workflow ES",
-  "main": "./build/index.js",
-  "typings": "./build/index.d.ts",
+  "main": "./build/src/index.js",
+  "typings": "./build/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",
-    "prepublish": "npm run build && npm test",
+    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",    
     "test": "jasmine",
     "posttest": "docker kill workflow-es-tests && docker rm workflow-es-tests"
   },
@@ -25,12 +24,12 @@
     "@types/jasmine": "^2.5.38",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.4.1",
-    "typescript": "^2.0.10"
+    "typescript": "^2.2.1"
   },
   "dependencies": {
     "json-stable-stringify": "^1.0.1",
     "mongodb": "^2.2.11",
-    "workflow-es": ">=1.0.0-beta.6"
+    "workflow-es": "^1.0.2"
   },
   "repository": {
     "type": "git",
