@@ -1,6 +1,6 @@
 {
   "name": "workflow-es",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.1",
   "description": "A lightweight workflow engine for Node.JS or the browser",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -29,12 +29,7 @@
     "jasmine-core": "^2.4.1",    
     "typescript": "^2.0.10"
   },
-  "peerDependencies": {
-    "es6-promise": "^4.0.5"
-  },
   "dependencies": {
-    "@types/es6-promise": "0.0.32",
-    "es6-promise": "^4.0.5",
     "underscore": "^1.8.3"
   }
 }

@@ -13,10 +13,8 @@ export class MongoDBPersistence implements IPersistenceProvider {
     
     constructor(connectionString: string, connected: () => void = null) {
         var self = this;
-        this.connect = new Promise<void>((resolve, reject) => {
-            console.log("Connecting to mongo...");
-            MongoClient.connect(connectionString, (err, db) => {
-                console.log("Connected to mongo");
+        this.connect = new Promise<void>((resolve, reject) => {            
+            MongoClient.connect(connectionString, (err, db) => {                
                 self.db = db;
                 self.workflowCollection = self.db.collection("workflows");
                 self.subscriptionCollection = self.db.collection("subscriptions");
@@ -28,14 +26,9 @@ export class MongoDBPersistence implements IPersistenceProvider {
         
     }
 
-    public createNewWorkflow(instance: WorkflowInstance): Promise<string> {
+    public async createNewWorkflow(instance: WorkflowInstance): Promise<string> {
         var self = this;        
         var deferred = new Promise<string>((resolve, reject) => {
-
-            // if ((!self.db) && (self.retryCount < 3)) {
-            //     self.retryCount++;                
-            // }
-
             self.workflowCollection.insertOne(instance)
                 .then((err, result) => {
                     instance.id = instance["_id"].toString();

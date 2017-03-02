@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "../../src";
 import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 

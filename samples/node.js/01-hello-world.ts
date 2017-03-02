@@ -1,9 +1,8 @@
-import { Promise } from "es6-promise";
 import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 class HelloWorld extends StepBody {    
-    public run(context: StepExecutionContext): Promise<ExecutionResult> {
+    public run(context: StepExecutionContext): Promise<ExecutionResult> {        
         console.log("Hello World");
         return ExecutionResult.resolveNext();
     }
