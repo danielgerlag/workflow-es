@@ -30,7 +30,7 @@
   "dependencies": {
     "json-stable-stringify": "^1.0.1",
     "mongodb": "^2.2.11",
-    "workflow-es": ">=1.0.0-beta6"
+    "workflow-es": ">=1.0.0-beta.6"
   },
   "repository": {
     "type": "git",
