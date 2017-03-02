@@ -10,3 +10,5 @@ export * from "./models/event-subscription";
 export * from "./models/event-publication";
 export * from "./models/subscription-step";
 export * from "./models/subscription-step-body";
+export * from "./models/workflow-status";
+export * from "./models/workflow-error-handling";

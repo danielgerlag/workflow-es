@@ -6,5 +6,7 @@ export class WorkflowDefinition {
     public description: string;
     public initialStep: number;
     public steps: Array<WorkflowStepBase> = [];
+    public errorBehavior : number;
+    public retryInterval : number;
 
 }
