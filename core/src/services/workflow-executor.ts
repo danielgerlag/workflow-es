@@ -1,7 +1,7 @@
 import { IPersistenceProvider, ILogger, IWorkflowExecutor } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
 import { WorkflowRegistry } from "./workflow-registry";
-import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, SubscriptionStep, SubscriptionStepBody, WorkflowStatus } from "../models";
+import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, SubscriptionStep, SubscriptionStepBody, WorkflowStatus, ExecutionError, WorkflowErrorHandling } from "../models";
  
 var _ = require("underscore");
 
@@ -15,7 +15,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
 
     }
 
-    public async Execute(instance: WorkflowInstance): Promise<void> {
+    public async execute(instance: WorkflowInstance): Promise<void> {
         var self = this;
         
         self.logger.log("Execute workflow: " + instance.id);
@@ -92,8 +92,26 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                 }
                 catch (err) {
                     self.logger.error("Error executing workflow %s on step %s - %o", instance.id, pointer.stepId, err);
-                    pointer.sleepUntil = (Date.now() + 60000); //todo: make configurable
-                    //pointer.errors.push();
+                    
+                    switch (step.errorBehavior) {
+                        case WorkflowErrorHandling.Retry:
+                            pointer.sleepUntil = (Date.now() + step.retryInterval);
+                            break;
+                        case WorkflowErrorHandling.Suspend:
+                            instance.status = WorkflowStatus.Suspended;
+                            break;
+                        case WorkflowErrorHandling.Terminate:
+                            instance.status = WorkflowStatus.Terminated;
+                            break;
+                        default:
+                            pointer.sleepUntil = (Date.now() + 60000);
+                            break;
+                    }
+                    
+                    var perr = new ExecutionError();
+                    perr.message = err.message;
+                    perr.errorTime = new Date();
+                    pointer.errors.push(perr);
                 }
             }
             else {

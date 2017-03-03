@@ -1,10 +1,12 @@
 import { StepBody, InlineStepBody } from "../abstractions";
-import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, SubscriptionStep, SubscriptionStepBody } from "../models";
+import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, SubscriptionStep, SubscriptionStepBody, WorkflowErrorHandling } from "../models";
 
 export class WorkflowBuilder<TData> {
     
-    public initialStep: number;
     private steps: Array<WorkflowStepBase> = [];
+    public initialStep: number = null;    
+    public errorBehavior : number = WorkflowErrorHandling.Retry;
+    public retryInterval : number = (60 * 1000);
 
     public build(id: string, version: number): WorkflowDefinition {
         var result = new WorkflowDefinition();
@@ -12,6 +14,8 @@ export class WorkflowBuilder<TData> {
         result.version = version;
         result.steps = this.steps;
         result.initialStep = this.initialStep;
+        result.errorBehavior = this.errorBehavior;
+        result.retryInterval = this.retryInterval;
 
         return result;
     }  
@@ -55,7 +59,6 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         this.step.name = name;
         return this;
     }
-
 
     public then<TNewStepBody extends StepBody>(body: { new(): TNewStepBody; }, setup: (step: StepBuilder<TNewStepBody, TData>) => void = null): StepBuilder<TNewStepBody, TData> {
         var newStep = new WorkflowStep<TNewStepBody>();
@@ -145,6 +148,12 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
             throw "Parent step of name " + stepName + " not found";
         
         return new StepBuilder<TNewStepBody, TData>(this.workflowBuilder, ancestor);
+    }
+
+    public onError(behavior: number, retryInterval: number = null): StepBuilder<TStepBody, TData> {
+        this.step.errorBehavior = behavior;
+        this.step.retryInterval = retryInterval;
+        return this;
     }
 
     private iterateParents(id: number, name: string): WorkflowStepBase {

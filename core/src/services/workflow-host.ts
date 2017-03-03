@@ -217,13 +217,13 @@ export class WorkflowHost implements IWorkflowHost {
     private async processWorkflowQueue(host: WorkflowHost): Promise<void> {                
         try {
             var workflowId = await host.queueProvider.dequeueForProcessing();
-            if (workflowId) {
+            while (workflowId) {
                 host.logger.log("Dequeued workflow " + workflowId + " for processing");
                 host.processWorkflow(host, workflowId)
                     .catch((err) => {
                         host.logger.error("Error processing workflow", workflowId, err);
                     });
-                host.processWorkflowQueue(host);
+                workflowId = await host.queueProvider.dequeueForProcessing();
             }
         }
         catch (err) {
@@ -239,7 +239,7 @@ export class WorkflowHost implements IWorkflowHost {
                 try {
                     var instance: WorkflowInstance = await host.persistence.getWorkflowInstance(workflowId);                        
                     if (instance.status == WorkflowStatus.Runnable) {
-                        await host.executor.Execute(instance);
+                        await host.executor.execute(instance);
                         complete = true;
                     }                    
                 }
@@ -265,14 +265,14 @@ export class WorkflowHost implements IWorkflowHost {
 
     private async processPublicationQueue(host: WorkflowHost): Promise<void> {
         try {
-            var pub = await host.queueProvider.dequeueForPublish();                
-            if (pub) {
+            var pub = await host.queueProvider.dequeueForPublish();
+            while (pub) {
                 host.processPublication(host, pub)
                     .catch((err) => {
                         host.logger.error(err);
                         host.persistence.createUnpublishedEvent(pub);
                     });
-                host.processPublicationQueue(host);
+                pub = await host.queueProvider.dequeueForPublish();
             }                 
         }
         catch (err) {
@@ -324,19 +324,13 @@ export class WorkflowHost implements IWorkflowHost {
             .catch(err => host.logger.error(err));
     }
 
-    private stashUnpublishedEvents() {
-        var self = this;
-        var deferred = new Promise<void>((resolve, reject) => {
-            self.queueProvider.dequeueForPublish()
-                .then(pub => {
-                    if (pub) {
-                        self.persistence.createUnpublishedEvent(pub);
-                        self.stashUnpublishedEvents();
-                    }
-                });
-            resolve();
-        });
-        return deferred;        
+    private async stashUnpublishedEvents() {
+        var self = this;        
+        var pub = await self.queueProvider.dequeueForPublish()
+        while (pub) {
+            await self.persistence.createUnpublishedEvent(pub);
+            pub = await self.queueProvider.dequeueForPublish();
+        }           
     }
 
     private registerCleanCallbacks() {
