@@ -15,7 +15,7 @@ npm install workflow-es --save
 
 ### Guides
 
-* [Javascript (ES2017)](https://github.com/danielgerlag/workflow-es/blob/master/es2017-guide.md)
+* [Javascript (ES6)](https://github.com/danielgerlag/workflow-es/blob/master/es2017-guide.md)
 * [Typescript](https://github.com/danielgerlag/workflow-es/blob/master/typescript-guide.md)
 
 
