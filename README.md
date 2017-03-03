@@ -15,7 +15,7 @@ npm install workflow-es --save
 
 ### Guides
 
-* [Javascript (ES2017)](es2017-guide.md)
+* [Javascript (ES6)](es2017-guide.md)
 * [Typescript](typescript-guide.md)
 
 
