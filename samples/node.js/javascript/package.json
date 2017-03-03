@@ -1,0 +1,10 @@
+{
+  "name": "@workflow/node-samples",
+  "version": "1.0.0",
+  "description": "Workflow samples for node.js",  
+  "dependencies": {
+    "workflow-es": "^1.0.2",
+    "workflow-es-mongodb": "^1.0.2",    
+    "mongodb": "^2.2.11"
+  }
+}
