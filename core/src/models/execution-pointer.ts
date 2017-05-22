@@ -9,7 +9,7 @@ export class ExecutionPointer {
     public startTime: Date;
     public endTime: Date;
     public eventName: string;
-    public eventKey: string;
+    public eventKey: any;
     public eventPublished: boolean;
     public eventData: any;
     public concurrentFork: number;

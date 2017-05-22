@@ -3,5 +3,5 @@ export class EventSubscription {
     public workflowId: string;
     public stepId: number;
     public eventName: string;
-    public eventKey: string;
+    public eventKey: any;
 }

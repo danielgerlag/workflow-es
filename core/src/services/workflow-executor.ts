@@ -30,12 +30,12 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             if (step) {
                 try {
                     if ((step instanceof SubscriptionStep) && (!pointer.eventPublished)) {
-                        pointer.eventKey = step.eventKey;
+                        pointer.eventKey = step.eventKey(instance.data);
                         pointer.eventName = step.eventName;
                         pointer.active = false;
                         await self.persistence.persistWorkflow(instance);
                         var subStep = (step as SubscriptionStep);
-                        self.host.subscribeEvent(instance.id, pointer.stepId, subStep.eventName, subStep.eventKey);                        
+                        self.host.subscribeEvent(instance.id, pointer.stepId, subStep.eventName, pointer.eventKey);                        
                         continue;
                     }
                     

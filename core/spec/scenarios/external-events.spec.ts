@@ -20,7 +20,7 @@ describe("external events", () => {
         public build(builder: WorkflowBuilder<MyDataClass>) {        
             builder
                 .startWith(Step1)
-                .waitFor("my-event", "0")
+                .waitFor("my-event", data => "0")
                     .output((step, data) => data.myValue = step.eventData);
         }
     }

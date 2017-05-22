@@ -85,7 +85,7 @@ export class WorkflowHost implements IWorkflowHost {
         this.registry.registerWorkflow<TData>(workflow);
     }
 
-    public async subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: string): Promise<void> {
+    public async subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: any): Promise<void> {
         var self = this;        
         self.logger.info("Subscribing to event %s %s for workflow %s step %s", eventName, eventKey, workflowId, stepId);
         var sub = new EventSubscription();

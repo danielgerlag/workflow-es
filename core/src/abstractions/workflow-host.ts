@@ -10,7 +10,7 @@ export interface IWorkflowHost {
     stop();
     startWorkflow(id: string, version: number, data: any): Promise<string>;    
     registerWorkflow<TData>(workflow: WorkflowBase<TData>);
-    subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: string): Promise<void>;    
+    subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: any): Promise<void>;    
     publishEvent(eventName: string, eventKey: string, eventData: any): Promise<void>;
     suspendWorkflow(id: string): Promise<boolean>;
     resumeWorkflow(id: string): Promise<boolean>;

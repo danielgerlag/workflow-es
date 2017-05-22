@@ -130,7 +130,7 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
         builder
             .startWith(LogMessage)
                 .input((step, data) => step.message = "Waiting for event...")
-            .waitFor("myEvent", "0")
+            .waitFor("myEvent", data => "0")
                 .output((step, data) => data.externalValue = step.eventData)
             .then(LogMessage)
                 .input((step, data) => step.message = "The event data is " + data.externalValue)
