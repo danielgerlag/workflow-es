@@ -4,4 +4,5 @@ export class EventSubscription {
     public stepId: number;
     public eventName: string;
     public eventKey: any;
+    public subscribeAsOf: Date;
 }

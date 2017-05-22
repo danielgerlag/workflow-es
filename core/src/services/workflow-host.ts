@@ -240,6 +240,7 @@ export class WorkflowHost implements IWorkflowHost {
                     var instance: WorkflowInstance = await host.persistence.getWorkflowInstance(workflowId);                        
                     if (instance.status == WorkflowStatus.Runnable) {
                         await host.executor.execute(instance);
+                        await host.persistence.persistWorkflow(instance);
                         complete = true;
                     }                    
                 }
