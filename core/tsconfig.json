@@ -9,7 +9,9 @@
         "sourceMap": false,
         "lib": [
             "es2017"
-        ]
+        ],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "exclude": [
         "node_modules"

@@ -6,7 +6,7 @@
   "typings": "./build/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",    
+    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",
     "test": "jasmine",
     "posttest": "docker kill workflow-es-tests && docker rm workflow-es-tests"
   },
@@ -20,15 +20,17 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^6.0.51",    
+    "@types/node": "^6.0.51",
     "@types/jasmine": "^2.5.38",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.4.1",
     "typescript": "^2.2.1"
   },
   "dependencies": {
+    "inversify": "^4.1.0",
     "json-stable-stringify": "^1.0.1",
     "mongodb": "^2.2.11",
+    "reflect-metadata": "^0.1.10",
     "workflow-es": "^1.1.0"
   },
   "repository": {

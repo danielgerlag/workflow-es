@@ -1,4 +1,4 @@
-import { WorkflowInstance, EventSubscription, EventPublication } from "../models";
+import { WorkflowInstance, EventSubscription, Event } from "../models";
 
 export interface IPersistenceProvider {
 
@@ -8,11 +8,16 @@ export interface IPersistenceProvider {
     getRunnableInstances(): Promise<Array<string>>;
 
     createEventSubscription(subscription: EventSubscription): Promise<void>;
-    getSubscriptions(eventName: string, eventKey: string): Promise<Array<EventSubscription>>;
+    getSubscriptions(eventName: string, eventKey: string, asOf: Date): Promise<Array<EventSubscription>>;
     terminateSubscription(id: string): Promise<void>;
 
-    createUnpublishedEvent(publication: EventPublication): Promise<void>;
-    getUnpublishedEvents(): Promise<Array<EventPublication>>;
-    removeUnpublishedEvent(id: string): Promise<void>;
+    createEvent(event: Event): Promise<string>;    
+    getEvent(id: string): Promise<Event>;
+    getRunnableEvents(): Promise<Array<string>>;
+    
+    markEventProcessed(id: string): Promise<void>;
+    markEventUnprocessed(id: string): Promise<void>;
+
+    getEvents(eventName: string, eventKey: any, asOf: Date): Promise<Array<string>>;
 
 }

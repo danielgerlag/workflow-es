@@ -1,7 +1,7 @@
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, EventPublication } from "../models";
-import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, IDistributedLockProvider, IWorkflowExecutor, ILogger } from "../abstractions";
+import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, ILogger } from "../abstractions";
 import { WorkflowRegistry } from "./workflow-registry";
-import { WorkflowExecutor } from "./workflow-executor";
+import { WorkflowQueueWorker } from "./workflow-queue-worker";
 
 import { MemoryPersistenceProvider } from "./memory-persistence-provider";
 import { SingleNodeLockProvider } from "./single-node-lock-provider";
@@ -12,17 +12,19 @@ export class WorkflowHost implements IWorkflowHost {
 
     private registry : WorkflowRegistry = new WorkflowRegistry();
 
+    private workers: Array<IBackgroundWorker> = [];
+
     private persistence: IPersistenceProvider = new MemoryPersistenceProvider();
     private lockProvider: IDistributedLockProvider = new SingleNodeLockProvider();
     private queueProvider:  IQueueProvider = new SingleNodeQueueProvider();
     private executor: IWorkflowExecutor;
     private logger: ILogger = new NullLogger();
-    private processTimer: any;
+    
     private publishTimer: any;
     private pollTimer: any;
 
-    constructor() {        
-        
+    constructor(workflowWorker: WorkflowQueueWorker) {        
+        this.workers.push(workflowWorker);
     }
 
     public usePersistence(provider: IPersistenceProvider) {
@@ -35,8 +37,10 @@ export class WorkflowHost implements IWorkflowHost {
 
     public start(): Promise<void> {        
         this.logger.log("Starting workflow host...");
-        this.executor = new WorkflowExecutor(this, this.persistence, this.registry, this.logger);
-        this.processTimer = setInterval(this.processWorkflowQueue, 500, this);
+        for (let worker of this.workers) {
+            worker.start();
+        }
+        
         this.pollTimer = setInterval(this.pollRunnables, 10000, this);
         this.publishTimer = setInterval(this.processPublicationQueue, 1000, this);
         this.registerCleanCallbacks();
@@ -46,9 +50,11 @@ export class WorkflowHost implements IWorkflowHost {
     public stop() {
         this.logger.log("Stopping workflow host...");
         this.stashUnpublishedEvents();
-        if (this.processTimer)
-            clearInterval(this.processTimer);
-        
+
+        for (let worker of this.workers) {
+            worker.stop();
+        }
+                
         if (this.pollTimer)
             clearInterval(this.pollTimer);
 
@@ -75,7 +81,7 @@ export class WorkflowHost implements IWorkflowHost {
         wf.executionPointers.push(ep);
         
         var workflowId = await self.persistence.createNewWorkflow(wf);
-        self.queueProvider.queueForProcessing(workflowId);
+        self.queueProvider.queueForProcessing(workflowId, QueueType.Workflow);
 
         return workflowId;
     }
@@ -84,57 +90,7 @@ export class WorkflowHost implements IWorkflowHost {
     public registerWorkflow<TData>(workflow: WorkflowBase<TData>) {
         this.registry.registerWorkflow<TData>(workflow);
     }
-
-    public async subscribeEvent(workflowId: string, stepId: number, eventName: string, eventKey: any): Promise<void> {
-        var self = this;        
-        self.logger.info("Subscribing to event %s %s for workflow %s step %s", eventName, eventKey, workflowId, stepId);
-        var sub = new EventSubscription();
-        sub.workflowId = workflowId;
-        sub.stepId = stepId;
-        sub.eventName = eventName;
-        sub.eventKey = eventKey;
-        await self.persistence.createEventSubscription(sub);    
-    }
-
-    public async publishEvent(eventName: string, eventKey: string, eventData: any): Promise<void> {
-        var self = this;
-        //todo: check host status        
     
-        self.logger.info("Publishing event %s %s", eventName, eventKey);
-        var subs = await self.persistence.getSubscriptions(eventName, eventKey);
-
-        var deferredPubs = [];
-        for (let sub of subs) {
-            var pub = new EventPublication();
-            pub.id = (Math.random() * 0x10000000000000).toString(16);
-            pub.eventData = eventData;
-            pub.eventKey = eventKey;
-            pub.eventName = eventName;
-            pub.stepId = sub.stepId;
-            pub.workflowId = sub.workflowId;
-            
-            deferredPubs.push(new Promise((resolvePub, rejectPub) => {
-                self.queueProvider.queueForPublish(pub)
-                    .then(() => {
-                        self.persistence.terminateSubscription(sub.id)
-                            .then(() => {
-                                resolvePub();
-                            });
-                    })
-                    .catch((err) => {
-                        self.persistence.createUnpublishedEvent(pub)
-                            .then(() => {
-                                self.persistence.terminateSubscription(sub.id)
-                                    .then(() => {
-                                        resolvePub();
-                                    });
-                            });
-                    });
-            }));
-        }
-        await Promise.all(deferredPubs);
-    }
-
     public async suspendWorkflow(id: string): Promise<boolean> {
         var self = this;
         try {        
@@ -214,73 +170,7 @@ export class WorkflowHost implements IWorkflowHost {
         }
     }
 
-    private async processWorkflowQueue(host: WorkflowHost): Promise<void> {                
-        try {
-            var workflowId = await host.queueProvider.dequeueForProcessing();
-            while (workflowId) {
-                host.logger.log("Dequeued workflow " + workflowId + " for processing");
-                host.processWorkflow(host, workflowId)
-                    .catch((err) => {
-                        host.logger.error("Error processing workflow", workflowId, err);
-                    });
-                workflowId = await host.queueProvider.dequeueForProcessing();
-            }
-        }
-        catch (err) {
-            host.logger.error("Error processing workflow queue: " + err);
-        }            
-    }
-
-    private async processWorkflow(host: WorkflowHost, workflowId: string): Promise<void> {
-        try {
-            var gotLock = await host.lockProvider.aquireLock(workflowId);                
-            if (gotLock) {
-                var complete = false;
-                try {
-                    var instance: WorkflowInstance = await host.persistence.getWorkflowInstance(workflowId);                        
-                    if (instance.status == WorkflowStatus.Runnable) {
-                        await host.executor.execute(instance);
-                        await host.persistence.persistWorkflow(instance);
-                        complete = true;
-                    }                    
-                }
-                finally {
-                    await host.lockProvider.releaseLock(workflowId);
-                    if (complete) {
-                        if ((instance.status == WorkflowStatus.Runnable) && (instance.nextExecution !== null)) {
-                            if (instance.nextExecution < Date.now()) {                                
-                                host.queueProvider.queueForProcessing(workflowId);
-                            }
-                        }
-                    }
-                }                
-            }
-            else {
-                host.logger.log("Workflow locked: " + workflowId);
-            }   
-        }
-        catch (err) {
-            host.logger.error("Error processing workflow: " + err);
-        }
-    }
-
-    private async processPublicationQueue(host: WorkflowHost): Promise<void> {
-        try {
-            var pub = await host.queueProvider.dequeueForPublish();
-            while (pub) {
-                host.processPublication(host, pub)
-                    .catch((err) => {
-                        host.logger.error(err);
-                        host.persistence.createUnpublishedEvent(pub);
-                    });
-                pub = await host.queueProvider.dequeueForPublish();
-            }                 
-        }
-        catch (err) {
-            host.logger.error("Error processing publication queue: " + err);
-        }        
-    } 
-
+    
     private async processPublication(host: WorkflowHost, pub: EventPublication): Promise<void> {
         try {
             host.logger.log("Publishing event " + pub.eventName + " for " + pub.workflowId);
@@ -301,7 +191,7 @@ export class WorkflowHost implements IWorkflowHost {
                 }
                 finally {
                     await host.lockProvider.releaseLock(pub.workflowId);
-                    await host.queueProvider.queueForProcessing(pub.workflowId);
+                    await host.queueProvider.queueForProcessing(pub.workflowId, QueueType.Workflow);
                 }       
             }
             else {
@@ -319,21 +209,12 @@ export class WorkflowHost implements IWorkflowHost {
         host.persistence.getRunnableInstances()
             .then((runnables) => {                
                 for (let item of runnables) {                    
-                    host.queueProvider.queueForProcessing(item);
+                    host.queueProvider.queueForProcessing(item, QueueType.Workflow);
                 }
             })
             .catch(err => host.logger.error(err));
     }
-
-    private async stashUnpublishedEvents() {
-        var self = this;        
-        var pub = await self.queueProvider.dequeueForPublish()
-        while (pub) {
-            await self.persistence.createUnpublishedEvent(pub);
-            pub = await self.queueProvider.dequeueForPublish();
-        }           
-    }
-
+    
     private registerCleanCallbacks() {
         var self = this;
 

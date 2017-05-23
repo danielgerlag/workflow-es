@@ -7,7 +7,7 @@ export * from "./models/step-execution-context";
 export * from "./models/step-outcome";
 export * from "./models/workflow-step";
 export * from "./models/event-subscription";
-export * from "./models/event-publication";
+export * from "./models/event";
 export * from "./models/subscription-step";
 export * from "./models/subscription-step-body";
 export * from "./models/workflow-status";

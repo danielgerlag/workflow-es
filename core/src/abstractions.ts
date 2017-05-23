@@ -7,3 +7,5 @@ export * from "./abstractions/distributed-lock-provider";
 export * from "./abstractions/workflow-executor";
 export * from "./abstractions/workflow-host";
 export * from "./abstractions/logger";
+export * from "./abstractions/background-worker";
+export * from "./abstractions/types";

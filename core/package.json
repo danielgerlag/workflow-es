@@ -5,8 +5,8 @@
   "main": "./build/src/index.js",
   "typings": "./build/src/index.d.ts",
   "scripts": {
-    "build": "tsc",    
-    "pretest": "npm run build",    
+    "build": "tsc",
+    "pretest": "npm run build",
     "test": "jasmine"
   },
   "keywords": [
@@ -25,10 +25,12 @@
     "@types/jasmine": "^2.5.38",
     "@types/node": "^6.0.51",
     "jasmine": "^2.5.2",
-    "jasmine-core": "^2.4.1",    
+    "jasmine-core": "^2.4.1",
     "typescript": "^2.2.1"
   },
   "dependencies": {
+    "inversify": "^4.1.0",
+    "reflect-metadata": "^0.1.10",
     "underscore": "^1.8.3"
   }
 }
