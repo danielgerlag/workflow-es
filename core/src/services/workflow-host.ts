@@ -1,5 +1,6 @@
+import { injectable, inject, multiInject } from "inversify";
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, EventPublication } from "../models";
-import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, ILogger } from "../abstractions";
+import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger } from "../abstractions";
 import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowQueueWorker } from "./workflow-queue-worker";
 
@@ -8,23 +9,32 @@ import { SingleNodeLockProvider } from "./single-node-lock-provider";
 import { SingleNodeQueueProvider } from "./single-node-queue-provider";
 import { NullLogger } from "./null-logger";
 
+@injectable()
 export class WorkflowHost implements IWorkflowHost {
 
-    private registry : WorkflowRegistry = new WorkflowRegistry();
+    @inject(WorkflowRegistry)
+    private registry : WorkflowRegistry;
 
-    private workers: Array<IBackgroundWorker> = [];
+    @multiInject(TYPES.IBackgroundWorker)
+    private workers: IBackgroundWorker[];
 
-    private persistence: IPersistenceProvider = new MemoryPersistenceProvider();
-    private lockProvider: IDistributedLockProvider = new SingleNodeLockProvider();
+    @inject(TYPES.IPersistenceProvider)
+    private persistence: IPersistenceProvider;
+
+    @inject(TYPES.IDistributedLockProvider)
+    private lockProvider: IDistributedLockProvider;
+    
+    @inject(TYPES.IQueueProvider)
     private queueProvider:  IQueueProvider = new SingleNodeQueueProvider();
-    private executor: IWorkflowExecutor;
-    private logger: ILogger = new NullLogger();
+
+    @inject(TYPES.ILogger)
+    private logger: ILogger;
     
     private publishTimer: any;
     private pollTimer: any;
 
-    constructor(workflowWorker: WorkflowQueueWorker) {        
-        this.workers.push(workflowWorker);
+    constructor() {       
+        
     }
 
     public usePersistence(provider: IPersistenceProvider) {

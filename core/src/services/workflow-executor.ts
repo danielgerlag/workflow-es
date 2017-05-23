@@ -1,18 +1,20 @@
-import { IPersistenceProvider, ILogger, IWorkflowExecutor } from "../abstractions";
+import { injectable, inject } from "inversify";
+import { IPersistenceProvider, ILogger, IWorkflowExecutor, TYPES } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
 import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, SubscriptionStep, SubscriptionStepBody, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
  
 var _ = require("underscore");
 
+@injectable()
 export class WorkflowExecutor implements IWorkflowExecutor {
 
-    constructor(
-        private registry: WorkflowRegistry,
-        private logger: ILogger) {
+    @inject(WorkflowRegistry)
+    private registry : WorkflowRegistry;
 
-    }
-
+    @inject(TYPES.ILogger)
+    private logger : ILogger;
+    
     public async execute(instance: WorkflowInstance): Promise<WorkflowExecutorResult> {
         var self = this;
 

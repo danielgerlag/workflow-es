@@ -1,5 +1,5 @@
 import { Container, ContainerModule, interfaces, injectable, inject } from "inversify";
-import { TYPES, IQueueProvider, IPersistenceProvider, IDistributedLockProvider, IWorkflowExecutor } from "./abstractions";
+import { TYPES, IQueueProvider, IPersistenceProvider, IDistributedLockProvider, IWorkflowExecutor, IBackgroundWorker } from "./abstractions";
 import { SingleNodeQueueProvider, SingleNodeLockProvider, MemoryPersistenceProvider, WorkflowExecutor, WorkflowQueueWorker } from "./services";
 
 export * from "./services"
@@ -13,7 +13,7 @@ export function configure(): Container {
         bind<IDistributedLockProvider>(TYPES.IDistributedLockProvider).to(SingleNodeLockProvider);
         bind<IWorkflowExecutor>(TYPES.IWorkflowExecutor).to(WorkflowExecutor);
 
-        bind<WorkflowQueueWorker>(WorkflowQueueWorker).to(WorkflowQueueWorker);        
+        bind<IBackgroundWorker>(TYPES.IBackgroundWorker).to(WorkflowQueueWorker);        
 
     });
 

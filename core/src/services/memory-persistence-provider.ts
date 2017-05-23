@@ -1,7 +1,9 @@
+import { injectable, inject } from "inversify";
 import { IPersistenceProvider } from "../abstractions";
 import { WorkflowInstance, WorkflowStatus, EventSubscription, EventPublication } from "../models";
 
 // In-memory implementation of IPersistenceProvider for demo and testing purposes
+@injectable()
 export class MemoryPersistenceProvider implements IPersistenceProvider {
 
     private instances: Array<WorkflowInstance> = [];

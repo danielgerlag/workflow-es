@@ -1,9 +1,11 @@
+import { injectable, inject } from "inversify";
 import { WorkflowDefinition } from "../models"
 import { WorkflowBase } from "../abstractions"
 import { WorkflowBuilder } from "./workflow-builder";
 
 var _ = require("underscore");
 
+@injectable()
 export class WorkflowRegistry {
 
     private _registry: Array<RegistryEntry> = [];

@@ -5,6 +5,6 @@ export var QueueType = {
 }
 
 export interface IQueueProvider {
-    queueForProcessing(workflowId: string, queue: any): Promise<void>;
+    queueForProcessing(id: string, queue: any): Promise<void>;
     dequeueForProcessing(queue: any): Promise<string>;
 }

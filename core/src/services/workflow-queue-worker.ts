@@ -1,9 +1,10 @@
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, Event } from "../models";
 import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, IDistributedLockProvider, IWorkflowExecutor, ILogger, TYPES, QueueType, IBackgroundWorker } from "../abstractions";
 import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowExecutor } from "./workflow-executor";
 
+@injectable()
 export class WorkflowQueueWorker implements IBackgroundWorker {
 
     @inject(TYPES.IWorkflowExecutor) 

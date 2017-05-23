@@ -3,7 +3,8 @@ let TYPES = {
     ILogger: Symbol("ILogger"),
     IPersistenceProvider: Symbol("IPersistenceProvider"),
     IQueueProvider: Symbol("IQueueProvider"),
-    IWorkflowExecutor: Symbol("IWorkflowExecutor")
+    IBackgroundWorker: Symbol("IBackgroundWorker"),
+    IWorkflowExecutor: Symbol("IWorkflowExecutor")    
 };
 
 export { TYPES };
