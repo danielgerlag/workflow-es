@@ -7,4 +7,6 @@ export * from "./services/null-logger";
 export * from "./services/workflow-executor";
 export * from "./services/workflow-host";
 export * from "./services/workflow-queue-worker";
+export * from "./services/event-queue-worker";
+export * from "./services/poll-worker";
 export * from "./services/workflow-registry";

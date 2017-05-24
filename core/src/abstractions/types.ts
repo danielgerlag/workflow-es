@@ -1,4 +1,5 @@
 let TYPES = {    
+    IWorkflowHost: Symbol("IWorkflowHost"),
     IDistributedLockProvider: Symbol("IDistributedLockProvider"),
     ILogger: Symbol("ILogger"),
     IPersistenceProvider: Symbol("IPersistenceProvider"),

@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { IPersistenceProvider } from "../abstractions";
-import { WorkflowInstance, WorkflowStatus, EventSubscription, EventPublication } from "../models";
+import { WorkflowInstance, WorkflowStatus, EventSubscription, Event } from "../models";
 
 // In-memory implementation of IPersistenceProvider for demo and testing purposes
 @injectable()
@@ -8,7 +8,7 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
 
     private instances: Array<WorkflowInstance> = [];
     private subscriptions: Array<EventSubscription> = [];
-    private publications: Array<EventPublication> = [];
+    private events: Array<Event> = [];
     
     
     public async createNewWorkflow(instance: WorkflowInstance): Promise<string> {
@@ -42,11 +42,11 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
 
     public async createEventSubscription(subscription: EventSubscription): Promise<void> {
         subscription.id = this.generateUID();
-        this.subscriptions.push(subscription);        
+        this.subscriptions.push(subscription);
     }
 
-    public async getSubscriptions(eventName: string, eventKey: string): Promise<Array<EventSubscription>> {        
-        return this.subscriptions.filter(x => x.eventName == eventName && x.eventKey == eventKey);
+    public async getSubscriptions(eventName: string, eventKey: string, asOf: Date): Promise<Array<EventSubscription>> {        
+        return this.subscriptions.filter(x => x.eventName == eventName && x.eventKey == eventKey && x.subscribeAsOf <= asOf);
     }
 
     public async terminateSubscription(id: string): Promise<void> {
@@ -55,20 +55,40 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
         }        
     }
 
-    public async createUnpublishedEvent(publication: EventPublication): Promise<void> {
-        this.publications.push(publication);
+    public async createEvent(event: Event): Promise<string> {
+        event.id = this.generateUID();
+        this.events.push(event);
+        return event.id;        
     }
 
-    public async getUnpublishedEvents(): Promise<Array<EventPublication>> {
-        return this.publications;
+    public async getEvent(id: string): Promise<Event> {
+        return this.events.find(x => x.id == id);
     }
 
-    public async removeUnpublishedEvent(id: string): Promise<void> {
-        var self = this;        
-        for (let item of self.publications.filter(x => x.id == id)) {
-            self.publications.splice(self.publications.indexOf(item), 1);
-        }
+    public async getRunnableEvents(): Promise<Array<string>> {
+        return this.events
+            .filter(x => !x.isProcessed && x.eventTime <= new Date())
+            .map<string>(x => x.id);
     }
+    
+    public async markEventProcessed(id: string): Promise<void> {
+        var evt = this.events.find(x => x.id == id);
+        if (evt)
+            evt.isProcessed = true;
+    }
+
+    public async markEventUnprocessed(id: string): Promise<void> {
+        var evt = this.events.find(x => x.id == id);
+        if (evt)
+            evt.isProcessed = false;
+    }
+
+    public async getEvents(eventName: string, eventKey: any, asOf: Date): Promise<Array<string>> {
+        return this.events
+            .filter(x => x.eventName == eventName && x.eventKey == eventKey && x.eventTime >= asOf)
+            .map<string>(x => x.id);
+    }
+
 
     private generateUID(): string {
         return (Math.random() * 0x10000000000000).toString(16);

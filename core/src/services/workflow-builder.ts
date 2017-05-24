@@ -127,10 +127,11 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         return this;
     }
 
-    public waitFor(eventName: string, eventKey: (data: TData) => any): StepBuilder<SubscriptionStepBody, TData> {
+    public waitFor(eventName: string, eventKey: (data: TData) => any, effectiveDate: (data: TData) => Date = x => new Date()): StepBuilder<SubscriptionStepBody, TData> {
         var newStep = new SubscriptionStep();
         newStep.eventName = eventName;
         newStep.eventKey = eventKey;
+        newStep.effectiveDate = effectiveDate;
         newStep.body = SubscriptionStepBody;
         this.workflowBuilder.addStep(newStep);
         var outcome = new StepOutcome();

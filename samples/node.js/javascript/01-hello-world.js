@@ -24,6 +24,11 @@ class HelloWorld_Workflow {
             .then(GoodbyeWorld);
     }
 }
+
+
+var container = workflow_es.configure();
+container.get(workflow_es.TYPES.IWorkflowHost);
+
 var host = new workflow_es.WorkflowHost();
 //host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
 //host.useLogger(console);

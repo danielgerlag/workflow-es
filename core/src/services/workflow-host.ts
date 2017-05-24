@@ -1,5 +1,5 @@
 import { injectable, inject, multiInject } from "inversify";
-import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, EventPublication } from "../models";
+import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription } from "../models";
 import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger } from "../abstractions";
 import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowQueueWorker } from "./workflow-queue-worker";
@@ -29,47 +29,22 @@ export class WorkflowHost implements IWorkflowHost {
 
     @inject(TYPES.ILogger)
     private logger: ILogger;
-    
-    private publishTimer: any;
-    private pollTimer: any;
-
-    constructor() {       
-        
-    }
-
-    public usePersistence(provider: IPersistenceProvider) {
-        this.persistence = provider;
-    }
-
-    public useLogger(logger: ILogger) {
-        this.logger = logger;
-    }
 
     public start(): Promise<void> {        
         this.logger.log("Starting workflow host...");
         for (let worker of this.workers) {
             worker.start();
         }
-        
-        this.pollTimer = setInterval(this.pollRunnables, 10000, this);
-        this.publishTimer = setInterval(this.processPublicationQueue, 1000, this);
         this.registerCleanCallbacks();
         return Promise.resolve(undefined);
     }
 
     public stop() {
         this.logger.log("Stopping workflow host...");
-        this.stashUnpublishedEvents();
 
         for (let worker of this.workers) {
             worker.stop();
         }
-                
-        if (this.pollTimer)
-            clearInterval(this.pollTimer);
-
-        if (this.publishTimer)
-            clearInterval(this.publishTimer);
     }
     
     public async startWorkflow(id: string, version: number, data: any = {}): Promise<string> {
@@ -179,51 +154,6 @@ export class WorkflowHost implements IWorkflowHost {
             return false;
         }
     }
-
-    
-    private async processPublication(host: WorkflowHost, pub: EventPublication): Promise<void> {
-        try {
-            host.logger.log("Publishing event " + pub.eventName + " for " + pub.workflowId);
-            var gotLock = await host.lockProvider.aquireLock(pub.workflowId);            
-            if (gotLock) {
-                try {
-                    var instance = await host.persistence.getWorkflowInstance(pub.workflowId);                
-                    var pointers = instance.executionPointers.filter(ep => ep.eventName == pub.eventName && ep.eventKey == pub.eventKey && !ep.eventPublished);
-                    for (let p of pointers) {
-                        p.eventData = pub.eventData;
-                        p.eventPublished = true;
-                        p.active = true;
-                    }
-                    instance.nextExecution = 0;
-                    await host.persistence.persistWorkflow(instance);
-                        
-                    host.logger.log("Published event " + pub.eventName + " for " + pub.workflowId);
-                }
-                finally {
-                    await host.lockProvider.releaseLock(pub.workflowId);
-                    await host.queueProvider.queueForProcessing(pub.workflowId, QueueType.Workflow);
-                }       
-            }
-            else {
-                host.logger.info("Workflow locked " + pub.workflowId);
-            }
-        }
-        catch (err) {
-            host.logger.error("Error processing publication: " + err);
-        }        
-    }
-
-
-    private pollRunnables(host: WorkflowHost) {
-        host.logger.info("pollRunnables " + " - now = " + Date.now());
-        host.persistence.getRunnableInstances()
-            .then((runnables) => {                
-                for (let item of runnables) {                    
-                    host.queueProvider.queueForProcessing(item, QueueType.Workflow);
-                }
-            })
-            .catch(err => host.logger.error(err));
-    }
     
     private registerCleanCallbacks() {
         var self = this;
@@ -233,12 +163,6 @@ export class WorkflowHost implements IWorkflowHost {
                 self.stop();
             });
         }
-
-        // if (typeof window !== 'undefined' && window) {
-        //     window.addEventListener('beforeunload', function(event) {
-        //         self.stop();
-        //     });
-        // }
     }
 
 }

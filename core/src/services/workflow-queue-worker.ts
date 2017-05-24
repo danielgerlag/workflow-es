@@ -29,7 +29,7 @@ export class WorkflowQueueWorker implements IBackgroundWorker {
     }
 
     public stop() {
-        this.logger.log("Stopping workflow host...");        
+        this.logger.log("Stopping workflow queue worker...");        
         if (this.processTimer)
             clearInterval(this.processTimer);
     }
