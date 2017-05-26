@@ -28,9 +28,13 @@ class EventSample_Workflow {
                 .input((step, data) => step.message = "The event data is " + data.externalValue);
     }
 }
-var host = new workflow_es.WorkflowHost();
+
+var container = workflow_es.configure();
+var host = container.get(workflow_es.TYPES.IWorkflowHost);
+
+//var host = new workflow_es.WorkflowHost();
 //host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-host.useLogger(console);
+//host.useLogger(console);
 host.registerWorkflow(new EventSample_Workflow());
 host.start();
 setTimeout(() => {

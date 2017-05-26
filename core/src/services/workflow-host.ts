@@ -1,7 +1,6 @@
 import { injectable, inject, multiInject } from "inversify";
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription } from "../models";
-import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger } from "../abstractions";
-import { WorkflowRegistry } from "./workflow-registry";
+import { WorkflowBase, IWorkflowRegistry, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger } from "../abstractions";
 import { WorkflowQueueWorker } from "./workflow-queue-worker";
 
 import { MemoryPersistenceProvider } from "./memory-persistence-provider";
@@ -12,8 +11,8 @@ import { NullLogger } from "./null-logger";
 @injectable()
 export class WorkflowHost implements IWorkflowHost {
 
-    @inject(WorkflowRegistry)
-    private registry : WorkflowRegistry;
+    @inject(TYPES.IWorkflowRegistry)
+    private registry : IWorkflowRegistry;
 
     @multiInject(TYPES.IBackgroundWorker)
     private workers: IBackgroundWorker[];
@@ -48,24 +47,24 @@ export class WorkflowHost implements IWorkflowHost {
     }
     
     public async startWorkflow(id: string, version: number, data: any = {}): Promise<string> {
-        var self = this;        
-            
-        var def = self.registry.getDefinition(id, version);
-        var wf = new WorkflowInstance();
+        let self = this;
+        let def = self.registry.getDefinition(id, version);
+        let wf = new WorkflowInstance();
         wf.data = data;
         wf.description = def.description;
         wf.workflowDefinitionId = def.id;
         wf.version = def.version;
         wf.nextExecution = 0;
+        wf.createTime = new Date();
         wf.status = WorkflowStatus.Runnable;
         
-        var ep = new ExecutionPointer();
+        let ep = new ExecutionPointer();
         ep.active = true;
         ep.stepId = def.initialStep;
-        ep.concurrentFork = 1;
+        ep.id = (Math.random() * 0x10000000000000).toString(16);
         wf.executionPointers.push(ep);
         
-        var workflowId = await self.persistence.createNewWorkflow(wf);
+        let workflowId = await self.persistence.createNewWorkflow(wf);
         self.queueProvider.queueForProcessing(workflowId, QueueType.Workflow);
 
         return workflowId;
@@ -77,14 +76,14 @@ export class WorkflowHost implements IWorkflowHost {
     }
     
     public async suspendWorkflow(id: string): Promise<boolean> {
-        var self = this;
+        let self = this;
         try {        
-            var result = false;
-            var gotLock = await self.lockProvider.aquireLock(id);
+            let result = false;
+            let gotLock = await self.lockProvider.aquireLock(id);
             
             if (gotLock) {              
                 try {
-                    var wf = await self.persistence.getWorkflowInstance(id);
+                    let wf = await self.persistence.getWorkflowInstance(id);
                     if (wf.status == WorkflowStatus.Runnable) {
                         wf.status = WorkflowStatus.Suspended;
                         await self.persistence.persistWorkflow(wf);
@@ -104,14 +103,14 @@ export class WorkflowHost implements IWorkflowHost {
     }
 
     public async resumeWorkflow(id: string): Promise<boolean> {
-        var self = this;
+        let self = this;
         try {        
-            var result = false;
-            var gotLock = await self.lockProvider.aquireLock(id);
+            let result = false;
+            let gotLock = await self.lockProvider.aquireLock(id);
             
             if (gotLock) {              
                 try {
-                    var wf = await self.persistence.getWorkflowInstance(id);
+                    let wf = await self.persistence.getWorkflowInstance(id);
                     if (wf.status == WorkflowStatus.Suspended) {
                         wf.status = WorkflowStatus.Runnable;
                         await self.persistence.persistWorkflow(wf);
@@ -131,14 +130,14 @@ export class WorkflowHost implements IWorkflowHost {
     }
 
     public async terminateWorkflow(id: string): Promise<boolean> {
-        var self = this;
+        let self = this;
         try {        
-            var result = false;
-            var gotLock = await self.lockProvider.aquireLock(id);
+            let result = false;
+            let gotLock = await self.lockProvider.aquireLock(id);
             
             if (gotLock) {              
                 try {
-                    var wf = await self.persistence.getWorkflowInstance(id);                    
+                    let wf = await self.persistence.getWorkflowInstance(id);                    
                     wf.status = WorkflowStatus.Terminated;
                     await self.persistence.persistWorkflow(wf);
                     result = true;                    
@@ -156,7 +155,7 @@ export class WorkflowHost implements IWorkflowHost {
     }
     
     private registerCleanCallbacks() {
-        var self = this;
+        let self = this;
 
         if (typeof process !== 'undefined' && process) {
             process.on('SIGINT', () => {

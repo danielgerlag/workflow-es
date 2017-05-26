@@ -26,9 +26,9 @@ export class WorkflowBuilder<TData> {
     }
 
     public startWith<TNewStepBody extends StepBody>(body: { new(): TNewStepBody; }, setup: (step: StepBuilder<TNewStepBody, TData>) => void = null): StepBuilder<TNewStepBody, TData> {
-        var step = new WorkflowStep<TNewStepBody>();
+        let step = new WorkflowStep<TNewStepBody>();
         step.body = body;
-        var stepBuilder = new StepBuilder<TNewStepBody, TData>(this, step);
+        let stepBuilder = new StepBuilder<TNewStepBody, TData>(this, step);
 
         //setup
         if (setup) {
@@ -61,17 +61,17 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     }
 
     public then<TNewStepBody extends StepBody>(body: { new(): TNewStepBody; }, setup: (step: StepBuilder<TNewStepBody, TData>) => void = null): StepBuilder<TNewStepBody, TData> {
-        var newStep = new WorkflowStep<TNewStepBody>();
+        let newStep = new WorkflowStep<TNewStepBody>();
         newStep.body = body;
         this.workflowBuilder.addStep(newStep);
-        var stepBuilder = new StepBuilder<TNewStepBody, TData>(this.workflowBuilder, newStep);
+        let stepBuilder = new StepBuilder<TNewStepBody, TData>(this.workflowBuilder, newStep);
 
         //setup
         if (setup) {
             setup(stepBuilder);
         }
 
-        var outcome = new StepOutcome();
+        let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
         outcome.value = null;
         this.step.outcomes.push(outcome);
@@ -80,7 +80,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     }
 
     public thenStep<TNewStepBody extends StepBody>(newStep: StepBuilder<TNewStepBody, TData>): StepBuilder<TNewStepBody, TData> {
-        var outcome = new StepOutcome();
+        let outcome = new StepOutcome();
         outcome.nextStep = newStep.step.id;
         outcome.value = null;
         this.step.outcomes.push(outcome);
@@ -89,7 +89,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     }
 
     public thenRun(step: (context: StepExecutionContext) => Promise<ExecutionResult>): StepBuilder<InlineStepBody, TData> {
-        var newStep = new WorkflowStep<InlineStepBody>();
+        let newStep = new WorkflowStep<InlineStepBody>();
         
         class bodyClass extends InlineStepBody {
             constructor() {
@@ -99,9 +99,9 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         
         newStep.body = bodyClass;
         this.workflowBuilder.addStep(newStep);
-        var stepBuilder = new StepBuilder<InlineStepBody, TData>(this.workflowBuilder, newStep);
+        let stepBuilder = new StepBuilder<InlineStepBody, TData>(this.workflowBuilder, newStep);
         
-        var outcome = new StepOutcome();
+        let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
         outcome.value = null;
         this.step.outcomes.push(outcome);
@@ -110,10 +110,10 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     }
 
     public when(outcomeValue: any): OutcomeBuilder<TData> {
-        var outcome = new StepOutcome();
+        let outcome = new StepOutcome();
         outcome.value = outcomeValue;
         this.step.outcomes.push(outcome);
-        var outcomeBuilder = new OutcomeBuilder<TData>(this.workflowBuilder, outcome);
+        let outcomeBuilder = new OutcomeBuilder<TData>(this.workflowBuilder, outcome);
         return outcomeBuilder;
     }
 
@@ -128,22 +128,22 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     }
 
     public waitFor(eventName: string, eventKey: (data: TData) => any, effectiveDate: (data: TData) => Date = x => new Date()): StepBuilder<SubscriptionStepBody, TData> {
-        var newStep = new SubscriptionStep();
+        let newStep = new SubscriptionStep();
         newStep.eventName = eventName;
         newStep.eventKey = eventKey;
         newStep.effectiveDate = effectiveDate;
         newStep.body = SubscriptionStepBody;
         this.workflowBuilder.addStep(newStep);
-        var outcome = new StepOutcome();
+        let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
         outcome.value = null;
         this.step.outcomes.push(outcome);
-        var stepBuilder = new StepBuilder<SubscriptionStepBody, TData>(this.workflowBuilder, newStep);
+        let stepBuilder = new StepBuilder<SubscriptionStepBody, TData>(this.workflowBuilder, newStep);
         return stepBuilder;
     }
 
     public end<TNewStepBody extends StepBody>(stepName: string): StepBuilder<TNewStepBody, TData> {
-        var ancestor: any = this.iterateParents(this.step.id, stepName);
+        let ancestor: any = this.iterateParents(this.step.id, stepName);
 
         if (!ancestor)
             throw "Parent step of name " + stepName + " not found";
@@ -158,7 +158,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     }
 
     private iterateParents(id: number, name: string): WorkflowStepBase {
-        var upstream = this.workflowBuilder.getUpstreamSteps(id);
+        let upstream = this.workflowBuilder.getUpstreamSteps(id);
         
         for (let parent of upstream) {
             if (parent.name == name)
@@ -166,7 +166,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         }
 
         for (let parent of upstream) {
-            var result = this.iterateParents(parent.id, name);
+            let result = this.iterateParents(parent.id, name);
             if (result)
                 return result;
         }
@@ -189,10 +189,10 @@ export class OutcomeBuilder<TData> {
     }
 
     public then<TNewStepBody extends StepBody>(body: { new(): TNewStepBody; }, setup: (step: StepBuilder<TNewStepBody, TData>) => void = null): StepBuilder<TNewStepBody, TData> {
-        var newStep = new WorkflowStep<TNewStepBody>();
+        let newStep = new WorkflowStep<TNewStepBody>();
         newStep.body = body;
         this.workflowBuilder.addStep(newStep);
-        var stepBuilder = new StepBuilder<TNewStepBody, TData>(this.workflowBuilder, newStep);
+        let stepBuilder = new StepBuilder<TNewStepBody, TData>(this.workflowBuilder, newStep);
 
         //setup
         if (setup) {
@@ -209,7 +209,7 @@ export class OutcomeBuilder<TData> {
     }
 
     public thenRun(step: (context: StepExecutionContext) => Promise<ExecutionResult>): StepBuilder<InlineStepBody, TData> {
-        var newStep = new WorkflowStep<InlineStepBody>();
+        let newStep = new WorkflowStep<InlineStepBody>();
         
         class bodyClass extends InlineStepBody {
             constructor() {
@@ -219,7 +219,7 @@ export class OutcomeBuilder<TData> {
         
         newStep.body = bodyClass;
         this.workflowBuilder.addStep(newStep);
-        var stepBuilder = new StepBuilder<InlineStepBody, TData>(this.workflowBuilder, newStep);
+        let stepBuilder = new StepBuilder<InlineStepBody, TData>(this.workflowBuilder, newStep);
         this.outcome.nextStep = newStep.id;        
         return stepBuilder;
     }

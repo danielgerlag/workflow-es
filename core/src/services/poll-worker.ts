@@ -31,16 +31,16 @@ export class PollWorker implements IBackgroundWorker {
             clearInterval(this.processTimer);
     }
 
-    private async process(): Promise<void> {                
-        this.logger.info("pollRunnables " + " - now = " + Date.now());
+    private async process(self: PollWorker): Promise<void> {                
+        self.logger.info("pollRunnables " + " - now = " + Date.now());
         try {        
-            var runnables = await this.persistence.getRunnableInstances();
+            let runnables = await self.persistence.getRunnableInstances();
             for (let item of runnables) {                    
-                this.queueProvider.queueForProcessing(item, QueueType.Workflow);
+                self.queueProvider.queueForProcessing(item, QueueType.Workflow);
             }
         }
         catch (err) {
-            this.logger.error("Error running poll: " + err);
+            self.logger.error("Error running poll: " + err);
         }
     }
 }

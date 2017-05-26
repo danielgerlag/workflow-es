@@ -28,7 +28,11 @@ class DataSample_Workflow {
                 .input((step, data) => step.message = "The answer is " + data.value3);
     }
 }
-var host = new workflow_es.WorkflowHost();
+
+var container = workflow_es.configure();
+var host = container.get(workflow_es.TYPES.IWorkflowHost);
+
+//var host = new workflow_es.WorkflowHost();
 //host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
 //host.useLogger(console);
 host.registerWorkflow(new DataSample_Workflow());

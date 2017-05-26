@@ -6,7 +6,7 @@
         "declaration": true,
         "noImplicitAny": false,
         "allowSyntheticDefaultImports": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "lib": [
             "es2017"
         ],

@@ -1,7 +1,6 @@
 import { injectable, inject } from "inversify";
-import { IPersistenceProvider, ILogger, IWorkflowExecutor, TYPES } from "../abstractions";
+import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
-import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, SubscriptionStep, SubscriptionStepBody, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
  
 var _ = require("underscore");
@@ -9,26 +8,26 @@ var _ = require("underscore");
 @injectable()
 export class WorkflowExecutor implements IWorkflowExecutor {
 
-    @inject(WorkflowRegistry)
-    private registry : WorkflowRegistry;
+    @inject(TYPES.IWorkflowRegistry)
+    private registry : IWorkflowRegistry;
 
     @inject(TYPES.ILogger)
     private logger : ILogger;
     
     public async execute(instance: WorkflowInstance): Promise<WorkflowExecutorResult> {
-        var self = this;
+        let self = this;
 
-        var result: WorkflowExecutorResult = new WorkflowExecutorResult();
+        let result: WorkflowExecutorResult = new WorkflowExecutorResult();
         
         self.logger.log("Execute workflow: " + instance.id);
-        var exePointers: Array<ExecutionPointer> = _.where(instance.executionPointers, { active: true });
-        var def = self.registry.getDefinition(instance.workflowDefinitionId, instance.version);
+        let exePointers: Array<ExecutionPointer> = _.where(instance.executionPointers, { active: true });
+        let def = self.registry.getDefinition(instance.workflowDefinitionId, instance.version);
         if (!def) {
             throw "No workflow definition in registry for " + instance.workflowDefinitionId + ":" + instance.version;
         }
 
         for (let pointer of exePointers) {
-            var step: WorkflowStepBase = _.findWhere(def.steps, { id: pointer.stepId });
+            let step: WorkflowStepBase = _.findWhere(def.steps, { id: pointer.stepId });
             if (step) {
                 try {
                     
@@ -45,12 +44,12 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                         pointer.startTime = new Date();
 
                     //log starting step
-                    var stepContext = new StepExecutionContext();
+                    let stepContext = new StepExecutionContext();
                     stepContext.persistenceData = pointer.persistenceData;
                     stepContext.step = step;
                     stepContext.workflow = instance;                        
                     
-                    var body = new step.body(); //todo: di
+                    let body = new step.body(); //todo: di
 
                     //inputs
                     for (let input of step.inputs) {
@@ -72,7 +71,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                     }
 
                     //execute
-                    var stepResult = await body.run(stepContext);
+                    let stepResult = await body.run(stepContext);
 
                     //outputs
                     for (let output of step.outputs) {
@@ -99,7 +98,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                             break;
                     }
                     
-                    var perr = new ExecutionError();
+                    let perr = new ExecutionError();
                     perr.message = err.message;
                     perr.errorTime = new Date();
                     pointer.errors.push(perr);
@@ -119,18 +118,14 @@ export class WorkflowExecutor implements IWorkflowExecutor {
         if (stepResult.proceed) {
             pointer.active = false;
             pointer.endTime = new Date();
-            var noOutcomes = true;
-            var forkCounter: number = 1;
             for (let outcome of _.where(step.outcomes, { value: stepResult.outcomeValue })) {
-                noOutcomes = false;
-                var newPointer = new ExecutionPointer();
+                let newPointer = new ExecutionPointer();
                 newPointer.active = true;
                 newPointer.stepId = outcome.nextStep;
-                newPointer.concurrentFork = (forkCounter * pointer.concurrentFork);
+                newPointer.id = (Math.random() * 0x10000000000000).toString(16);
+                newPointer.contextItem = pointer.contextItem;
                 instance.executionPointers.push(newPointer);
-                forkCounter++;
             }
-            pointer.pathTerminal = noOutcomes;
         }
         else {
             pointer.persistenceData = stepResult.persistenceData;
@@ -141,7 +136,11 @@ export class WorkflowExecutor implements IWorkflowExecutor {
 
     determineNextExecutionTime(instance: WorkflowInstance) {
         instance.nextExecution = null;
-        for (let pointer of instance.executionPointers.filter(value => value.active)) {
+
+        if (instance.status == WorkflowStatus.Complete)
+            return;
+
+        for (let pointer of instance.executionPointers.filter(x => x.active && x.children.length == 0)) {
             if (!pointer.sleepUntil) {
                 instance.nextExecution = 0;
                 return;
@@ -149,15 +148,17 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             instance.nextExecution = Math.min(pointer.sleepUntil, instance.nextExecution ? instance.nextExecution : pointer.sleepUntil);
         }
         if (instance.nextExecution === null) {            
-            var forks: number = 1
-            var terminals: number = 0;
-            for (let pointer of instance.executionPointers) {
-                forks = Math.max(pointer.concurrentFork, forks);
-                if (pointer.pathTerminal)
-                    terminals++;
-            }
-            if (forks <= terminals)
-                instance.status = WorkflowStatus.Complete;
+            for (let pointer of instance.executionPointers.filter(x => x.active && x.children.length > 0)) {
+                if (instance.executionPointers.filter(x => x.children.includes(pointer.id)).every(x => !x.endTime)) {
+                    instance.nextExecution = 0;
+                    return;
+                }
+            }            
+        }
+
+        if ((instance.nextExecution === null) && (instance.executionPointers.every(x => Boolean(x.endTime)))) {
+            instance.completeTime = new Date();
+            instance.status = WorkflowStatus.Complete;
         }
     }
 

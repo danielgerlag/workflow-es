@@ -1,17 +1,16 @@
 import { injectable, inject } from "inversify";
 import { WorkflowDefinition } from "../models"
-import { WorkflowBase } from "../abstractions"
+import { WorkflowBase, IWorkflowRegistry } from "../abstractions"
 import { WorkflowBuilder } from "./workflow-builder";
 
 var _ = require("underscore");
+var wfes_registry: Array<RegistryEntry> = [];
 
 @injectable()
-export class WorkflowRegistry {
-
-    private _registry: Array<RegistryEntry> = [];
-
+export class WorkflowRegistry implements IWorkflowRegistry {
+    
     public getDefinition(id: string, version: number) : WorkflowDefinition {
-        var item = _.findWhere(this._registry, { id: id, version: version });
+        let item = _.findWhere(wfes_registry, { id: id, version: version });
         if (!item)
             throw "Workflow not registered";
              
@@ -19,13 +18,13 @@ export class WorkflowRegistry {
     }
 
     public registerWorkflow<TData>(workflow: WorkflowBase<TData>) {
-        var entry = new RegistryEntry();
+        let entry = new RegistryEntry();
         entry.id = workflow.id;
         entry.version = workflow.version;
-        var builder = new WorkflowBuilder<TData>();
+        let builder = new WorkflowBuilder<TData>();
         workflow.build(builder);
         entry.defintion = builder.build(workflow.id, workflow.version);        
-        this._registry.push(entry);
+        wfes_registry.push(entry);
     }
 
 }

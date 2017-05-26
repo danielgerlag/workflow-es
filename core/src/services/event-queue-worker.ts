@@ -34,81 +34,82 @@ export class EventQueueWorker implements IBackgroundWorker {
             clearInterval(this.processTimer);
     }
 
-    private async processQueue(): Promise<void> {                
+    private async processQueue(self: EventQueueWorker): Promise<void> {                
         try {
-            var eventId = await this.queueProvider.dequeueForProcessing(QueueType.Event);
+            let eventId = await self.queueProvider.dequeueForProcessing(QueueType.Event);
             while (eventId) {
-                this.logger.log("Dequeued event " + eventId + " for processing");
-                this.processEvent(eventId)
+                self.logger.log("Dequeued event " + eventId + " for processing");
+                self.processEvent(self, eventId)
                     .catch((err) => {
-                        this.logger.error("Error processing event", eventId, err);
+                        self.logger.error("Error processing event", eventId, err);
                     });
-                eventId = await this.queueProvider.dequeueForProcessing(QueueType.Event);
+                eventId = await self.queueProvider.dequeueForProcessing(QueueType.Event);
             }
         }
         catch (err) {
-            this.logger.error("Error processing event queue: " + err);
+            self.logger.error("Error processing event queue: " + err);
         }            
     }
 
-    private async processEvent(eventId: string): Promise<void> {
+    private async processEvent(self: EventQueueWorker, eventId: string): Promise<void> {
         try {
-            var gotLock = await this.lockProvider.aquireLock(eventId);                
+            const gotLock = await self.lockProvider.aquireLock(eventId);                
             if (gotLock) {
                 try {
-                    var evt = await this.persistence.getEvent(eventId);
+                    let evt = await self.persistence.getEvent(eventId);
                     if (evt.eventTime <= new Date())
                     {
-                        var subs = await this.persistence.getSubscriptions(evt.eventName, evt.eventKey, evt.eventTime);
-                        var success = true;
+                        let subs = await self.persistence.getSubscriptions(evt.eventName, evt.eventKey, evt.eventTime);
+                        let success = true;
 
                         for (let sub of subs)
-                            success = success && await this.seedSubscription(evt, sub);
+                            success = success && await self.seedSubscription(self, evt, sub);
 
                         if (success)
-                            await this.persistence.markEventProcessed(eventId);
+                            await self.persistence.markEventProcessed(eventId);
                     }
                                         
                 }
                 finally {
-                    await this.lockProvider.releaseLock(eventId);                    
+                    await self.lockProvider.releaseLock(eventId);                    
                 }                
             }
             else {
-                this.logger.log("Event locked: " + eventId);
+                self.logger.log("Event locked: " + eventId);
             }   
         }
         catch (err) {
-            this.logger.error("Error processing event: " + err);
+            self.logger.error("Error processing event: " + err);
         }
     }
 
-    private async seedSubscription(evt: Event, sub: EventSubscription): Promise<boolean> {
-        if (await this.lockProvider.aquireLock(sub.workflowId)) {
+    private async seedSubscription(self: EventQueueWorker, evt: Event, sub: EventSubscription): Promise<boolean> {
+        
+        if (await self.lockProvider.aquireLock(sub.workflowId)) {
             try {
-                var workflow = await this.persistence.getWorkflowInstance(sub.workflowId);
-                var pointers = workflow.executionPointers.filter(p => p.eventName == sub.eventName && p.eventKey == sub.eventKey && !p.eventPublished);
+                let workflow = await self.persistence.getWorkflowInstance(sub.workflowId);
+                let pointers = workflow.executionPointers.filter(p => p.eventName == sub.eventName && p.eventKey == sub.eventKey && !p.eventPublished);
                 for (let p of pointers) {
                     p.eventData = evt.eventData;
                     p.eventPublished = true;
                     p.active = true;
                 }
                 workflow.nextExecution = 0;
-                await this.persistence.persistWorkflow(workflow);
-                await this.persistence.terminateSubscription(sub.id);
+                await self.persistence.persistWorkflow(workflow);
+                await self.persistence.terminateSubscription(sub.id);
                 return true;
             }
             catch (err) {
-                this.logger.error(err);
+                self.logger.error(err);
                 return false;
             }
             finally {
-                await this.lockProvider.releaseLock(sub.workflowId);
-                this.queueProvider.queueForProcessing(sub.workflowId, QueueType.Workflow);
+                await self.lockProvider.releaseLock(sub.workflowId);
+                self.queueProvider.queueForProcessing(sub.workflowId, QueueType.Workflow);
             }
         }
         else {
-            this.logger.info("Workflow locked " + sub.workflowId);
+            self.logger.info("Workflow locked " + sub.workflowId);
             return false;
         }
     }

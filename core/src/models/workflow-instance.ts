@@ -9,7 +9,7 @@ export class WorkflowInstance {
     public nextExecution : number;
     public status : number;
     public data : any;
-    public startTime : Date;
+    public createTime : Date;
     public completeTime : Date;    
     public executionPointers : Array<ExecutionPointer> = [];
 

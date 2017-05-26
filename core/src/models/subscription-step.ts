@@ -21,7 +21,7 @@ export class SubscriptionStep extends WorkflowStep<SubscriptionStepBody> {
             if (this.eventKey != null)
                 executionPointer.eventKey = this.eventKey(workflow.data);
 
-            var effDate: Date = new Date(2000, 1, 1);
+            let effDate: Date = new Date(2000, 1, 1);
 
             if (this.effectiveDate)
                 effDate = this.effectiveDate(workflow.data);
@@ -29,7 +29,7 @@ export class SubscriptionStep extends WorkflowStep<SubscriptionStepBody> {
             executionPointer.eventName = this.eventName;
             executionPointer.active = false;
 
-            var sub = new EventSubscription();
+            let sub = new EventSubscription();
             sub.workflowId = workflow.id;
             sub.stepId = executionPointer.stepId;
             sub.eventName = executionPointer.eventName;
@@ -44,7 +44,7 @@ export class SubscriptionStep extends WorkflowStep<SubscriptionStepBody> {
 
     public beforeExecute(executorResult: WorkflowExecutorResult, context: StepExecutionContext, executionPointer: ExecutionPointer, body: StepBody): any {
         if (executionPointer.eventPublished) {
-            var subBody = (body as SubscriptionStepBody);
+            let subBody = (body as SubscriptionStepBody);
             subBody.eventData = executionPointer.eventData;            
         }
         return ExecutionPipelineDirective.Next;

@@ -34,68 +34,71 @@ export class WorkflowQueueWorker implements IBackgroundWorker {
             clearInterval(this.processTimer);
     }
 
-    private async processQueue(): Promise<void> {                
+    private async processQueue(self: WorkflowQueueWorker): Promise<void> {                
         try {
-            var workflowId = await this.queueProvider.dequeueForProcessing(QueueType.Workflow);
+            let workflowId = await self.queueProvider.dequeueForProcessing(QueueType.Workflow);
             while (workflowId) {
-                this.logger.log("Dequeued workflow " + workflowId + " for processing");
-                this.processWorkflow(workflowId)
+                self.logger.log("Dequeued workflow " + workflowId + " for processing");
+                self.processWorkflow(self, workflowId)
                     .catch((err) => {
-                        this.logger.error("Error processing workflow", workflowId, err);
+                        self.logger.error("Error processing workflow", workflowId, err);
                     });
-                workflowId = await this.queueProvider.dequeueForProcessing(QueueType.Workflow);
+                workflowId = await self.queueProvider.dequeueForProcessing(QueueType.Workflow);
             }
         }
         catch (err) {
-            this.logger.error("Error processing workflow queue: " + err);
+            self.logger.error("Error processing workflow queue: " + err);
         }            
     }
 
-    private async processWorkflow(workflowId: string): Promise<void> {
+    private async processWorkflow(self: WorkflowQueueWorker, workflowId: string): Promise<void> {
         try {
-            var gotLock = await this.lockProvider.aquireLock(workflowId);                
+            const gotLock = await self.lockProvider.aquireLock(workflowId);                
             if (gotLock) {
-                var complete = false;
+                let complete = false;
                 try {
-                    var instance: WorkflowInstance = await this.persistence.getWorkflowInstance(workflowId);                        
+                    var instance: WorkflowInstance = await self.persistence.getWorkflowInstance(workflowId);
+                    if (!instance)
+                        throw `Workflow ${workflowId} not found`;
+
                     if (instance.status == WorkflowStatus.Runnable) {
                         try {
-                            await this.executor.execute(instance);
+                            await self.executor.execute(instance);
                             complete = true;
                         }
                         finally {
-                            await this.persistence.persistWorkflow(instance);                        
+                            await self.persistence.persistWorkflow(instance);                        
                         }
                     }                    
                 }
                 finally {
-                    await this.lockProvider.releaseLock(workflowId);
+                    await self.lockProvider.releaseLock(workflowId);
                     if (complete) {
                         if ((instance.status == WorkflowStatus.Runnable) && (instance.nextExecution !== null)) {
                             if (instance.nextExecution < Date.now()) {                                
-                                this.queueProvider.queueForProcessing(workflowId, QueueType.Workflow);
+                                self.queueProvider.queueForProcessing(workflowId, QueueType.Workflow);
                             }
                         }
                     }
                 }                
             }
             else {
-                this.logger.log("Workflow locked: " + workflowId);
+                self.logger.log("Workflow locked: " + workflowId);
             }   
         }
         catch (err) {
-            this.logger.error("Error processing workflow: " + err);
+            self.logger.error("Error processing workflow: " + err);
         }
     }
 
-    private async subscribeEvent(subscription: EventSubscription) {
+    private async subscribeEvent(self: WorkflowQueueWorker, subscription: EventSubscription) {
         //TODO: move to own class       
         
-        await this.persistence.createEventSubscription(subscription);
-        var events = await this.persistence.getEvents(subscription.eventName, subscription.eventKey, subscription.subscribeAsOf);
+        await self.persistence.createEventSubscription(subscription);
+        let events = await self.persistence.getEvents(subscription.eventName, subscription.eventKey, subscription.subscribeAsOf);
         for (let evt of events) {
-            await this.persistence.markEventUnprocessed(evt);
-            this.queueProvider.queueForProcessing(evt, QueueType.Event);
+            await self.persistence.markEventUnprocessed(evt);
+            self.queueProvider.queueForProcessing(evt, QueueType.Event);
         }
     }
 }
