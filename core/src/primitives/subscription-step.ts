@@ -1,15 +1,6 @@
-import { WorkflowStep } from "./workflow-step";
+import { EventSubscription, ExecutionResult, StepExecutionContext, ExecutionPointer, WorkflowInstance, WorkflowDefinition, WorkflowStep, StepOutcome, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
 import { SubscriptionStepBody } from "./subscription-step-body";
 import { StepBody } from "../abstractions";
-import { StepOutcome } from "./step-outcome";
-import { ExecutionPipelineDirective } from "./execution-pipeline-directive";
-import { WorkflowExecutorResult } from "./workflow-executor-result";
-import { WorkflowDefinition } from "./workflow-definition";
-import { WorkflowInstance } from "./workflow-instance";
-import { ExecutionPointer } from "./execution-pointer";
-import { StepExecutionContext } from "./step-execution-context";
-import { ExecutionResult } from "./execution-result";
-import { EventSubscription } from "./event-subscription";
 
 export class SubscriptionStep extends WorkflowStep<SubscriptionStepBody> {
     public eventKey: (data: any) => any;

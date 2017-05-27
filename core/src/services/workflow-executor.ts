@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
-import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, SubscriptionStep, SubscriptionStepBody, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
+import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
  
 var _ = require("underscore");
 
@@ -55,12 +55,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                     for (let input of step.inputs) {
                         input(body, instance.data);
                     }
-
-                    //set event data
-                    if (body instanceof SubscriptionStepBody) {
-                        body.eventData = pointer.eventData;
-                    }
-
+                    
                     switch (step.beforeExecute(result, stepContext, pointer, body)) {
                         case ExecutionPipelineDirective.Defer:
                             continue;
@@ -97,11 +92,12 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                             pointer.sleepUntil = (Date.now() + 60000);
                             break;
                     }
-                    
+
+                    pointer.retryCount++;
                     let perr = new ExecutionError();
                     perr.message = err.message;
                     perr.errorTime = new Date();
-                    pointer.errors.push(perr);
+                    result.errors.push(perr);
                 }
             }
             else {
@@ -121,6 +117,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             for (let outcome of _.where(step.outcomes, { value: stepResult.outcomeValue })) {
                 let newPointer = new ExecutionPointer();
                 newPointer.active = true;
+                newPointer.predecessorId = pointer.id;
                 newPointer.stepId = outcome.nextStep;
                 newPointer.id = (Math.random() * 0x10000000000000).toString(16);
                 newPointer.contextItem = pointer.contextItem;

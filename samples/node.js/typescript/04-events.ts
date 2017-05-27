@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configure, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 
@@ -31,10 +31,12 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
     }
 }
 
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new EventSample_Workflow());
+var config = configure();
+//config.useLogger(new ConsoleLogger());
+//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
+var host = config.getHost();
+
+host.registerWorkflow(EventSample_Workflow);
 host.start();
 
 setTimeout(() => {

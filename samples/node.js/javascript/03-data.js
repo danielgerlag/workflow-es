@@ -29,13 +29,12 @@ class DataSample_Workflow {
     }
 }
 
-var container = workflow_es.configure();
-var host = container.get(workflow_es.TYPES.IWorkflowHost);
+var config = workflow_es.configure();
+//config.useLogger(new workflow_es.ConsoleLogger());
+//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
+var host = config.getHost();
 
-//var host = new workflow_es.WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new DataSample_Workflow());
+host.registerWorkflow(DataSample_Workflow);
 host.start();
 host.startWorkflow("data-sample", 1, { value1: 2, value2: 7 })
     .then(id => console.log("Started workflow: " + id));

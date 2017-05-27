@@ -20,6 +20,6 @@
         "spec/**/*.ts"
     ],
     "files": [
-        "src/index.ts"        
+        "src/index.ts"
     ]
 }

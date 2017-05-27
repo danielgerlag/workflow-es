@@ -24,10 +24,13 @@ class OutcomeSample_Workflow {
                 .end("Determine Future");
     }
 }
-var host = new workflow_es.WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new OutcomeSample_Workflow());
+var config = workflow_es.configure();
+//config.useLogger(new workflow_es.ConsoleLogger());
+//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
+var host = config.getHost();
+
+
+host.registerWorkflow(OutcomeSample_Workflow);
 host.start();
 host.startWorkflow("outcome-sample", 1, { myValue: 7 })
     .then(id => console.log("Started workflow: " + id));

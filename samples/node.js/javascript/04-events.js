@@ -29,13 +29,12 @@ class EventSample_Workflow {
     }
 }
 
-var container = workflow_es.configure();
-var host = container.get(workflow_es.TYPES.IWorkflowHost);
+var config = workflow_es.configure();
+//config.useLogger(new workflow_es.ConsoleLogger());
+//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
+var host = config.getHost();
 
-//var host = new workflow_es.WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new EventSample_Workflow());
+host.registerWorkflow(EventSample_Workflow);
 host.start();
 setTimeout(() => {
     var myData = new MyDataClass();
@@ -46,6 +45,6 @@ setTimeout(() => {
 }, 1000);
 setTimeout(() => {
     console.log("Publishing event...");
-    host.publishEvent("myEvent", "0", "hi!")
+    host.publishEvent("myEvent", "0", "hi!", new Date())
         .then(() => console.log("Published event"));
 }, 5000);

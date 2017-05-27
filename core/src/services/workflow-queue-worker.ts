@@ -63,7 +63,7 @@ export class WorkflowQueueWorker implements IBackgroundWorker {
 
                     if (instance.status == WorkflowStatus.Runnable) {
                         try {
-                            await self.executor.execute(instance);
+                            var result = await self.executor.execute(instance);
                             complete = true;
                         }
                         finally {
@@ -74,6 +74,11 @@ export class WorkflowQueueWorker implements IBackgroundWorker {
                 finally {
                     await self.lockProvider.releaseLock(workflowId);
                     if (complete) {
+                        //TODO: cleanup
+                        for (let sub of result.subscriptions) {
+                            await self.subscribeEvent(self, sub);
+                        }
+
                         if ((instance.status == WorkflowStatus.Runnable) && (instance.nextExecution !== null)) {
                             if (instance.nextExecution < Date.now()) {                                
                                 self.queueProvider.queueForProcessing(workflowId, QueueType.Workflow);

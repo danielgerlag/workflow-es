@@ -33,10 +33,21 @@ export class PollWorker implements IBackgroundWorker {
 
     private async process(self: PollWorker): Promise<void> {                
         self.logger.info("pollRunnables " + " - now = " + Date.now());
+        //TODO: lock
         try {        
             let runnables = await self.persistence.getRunnableInstances();
             for (let item of runnables) {                    
                 self.queueProvider.queueForProcessing(item, QueueType.Workflow);
+            }
+        }
+        catch (err) {
+            self.logger.error("Error running poll: " + err);
+        }
+
+        try {
+            let events = await self.persistence.getRunnableEvents();
+            for (let item of events) {
+                self.queueProvider.queueForProcessing(item, QueueType.Event);
             }
         }
         catch (err) {

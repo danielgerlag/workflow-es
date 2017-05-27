@@ -1,5 +1,5 @@
 import { injectable, inject, multiInject } from "inversify";
-import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription } from "../models";
+import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, Event } from "../models";
 import { WorkflowBase, IWorkflowRegistry, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger } from "../abstractions";
 import { WorkflowQueueWorker } from "./workflow-queue-worker";
 
@@ -71,9 +71,25 @@ export class WorkflowHost implements IWorkflowHost {
     }
     
     
-    public registerWorkflow<TData>(workflow: WorkflowBase<TData>) {
-        this.registry.registerWorkflow<TData>(workflow);
+    public registerWorkflow<TData>(workflow: new () => WorkflowBase<TData>) {
+        this.registry.registerWorkflow<TData>(new workflow());
     }
+
+    public async publishEvent(eventName: string, eventKey: string, eventData: any, eventTime: Date): Promise<void> {
+        //todo: check host status        
+
+        this.logger.info("Publishing event %s %s", eventName, eventKey);
+
+        let evt = new Event();
+        evt.eventData = eventData;
+        evt.eventKey = eventKey;
+        evt.eventName = eventName;
+        evt.eventTime = eventTime;
+        evt.isProcessed = false;
+        let id = await this.persistence.createEvent(evt);
+        this.queueProvider.queueForProcessing(id, QueueType.Event);        
+    }
+
     
     public async suspendWorkflow(id: string): Promise<boolean> {
         let self = this;

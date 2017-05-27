@@ -88,7 +88,6 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
             .map<string>(x => x.id);
     }
 
-
     private generateUID(): string {
         return (Math.random() * 0x10000000000000).toString(16);
     }

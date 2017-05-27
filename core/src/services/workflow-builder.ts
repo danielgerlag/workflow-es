@@ -1,5 +1,6 @@
 import { StepBody, InlineStepBody } from "../abstractions";
-import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, SubscriptionStep, SubscriptionStepBody, WorkflowErrorHandling } from "../models";
+import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, WorkflowErrorHandling } from "../models";
+import { SubscriptionStep, SubscriptionStepBody } from "../primitives";
 
 export class WorkflowBuilder<TData> {
     

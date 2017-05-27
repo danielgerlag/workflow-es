@@ -4,7 +4,7 @@
 
 ### Steps
 
-A workflow consists of a series of connected steps.  Each step produces an outcome value and subsequent steps are triggered by subscribing to a particular outcome of a preceeding step.  The default outcome of *null* can be used for a basic linear workflow.
+A workflow consists of a series of connected steps.  Each step produces an outcome value and subsequent steps are triggered by subscribing to a particular outcome of a preceeding step.
 Steps are usually defined by inheriting from the StepBody abstract class and implementing the *run* method.  They can also be created inline while defining the workflow structure.
 
 First we define some steps
@@ -148,9 +148,9 @@ When your application starts, create a WorkflowHost service,  call *registerWork
 ```javascript
 const workflow_es = require("workflow-es");
 ...
-var host = new workflow_es.WorkflowHost();
-host.useLogger(console);
-host.registerWorkflow(new HelloWorld_Workflow());
+let config = workflow_es.configure();
+let host = config.getHost();
+host.registerWorkflow(HelloWorld_Workflow);
 host.start();
 
 host.startWorkflow("hello-world", 1)
