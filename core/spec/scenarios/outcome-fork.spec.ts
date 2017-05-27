@@ -13,21 +13,21 @@
      class TaskA extends StepBody {    
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
              outcomeForkScope.taskATicker++;
-             return ExecutionResult.resolveOutcome(true);
+             return ExecutionResult.outcome(true);
          }
      }
 
      class TaskB extends StepBody {    
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
              outcomeForkScope.taskBTicker++;
-             return ExecutionResult.resolveNext();
+             return ExecutionResult.next();
          }
      }
 
      class TaskC extends StepBody {    
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
              outcomeForkScope.taskCTicker++;
-             return ExecutionResult.resolveNext();
+             return ExecutionResult.next();
          }
      }
 

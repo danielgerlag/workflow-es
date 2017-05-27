@@ -13,7 +13,7 @@ First we define some steps
 class HelloWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Hello World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 ```
@@ -46,7 +46,7 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
             .startWith(HelloWorld)
             .thenRun((context) => {
                 console.log("Goodbye world");                
-                return ExecutionResult.resolveNext();
+                return ExecutionResult.next();
             });
     }
 }
@@ -64,11 +64,11 @@ class DeferredStep extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         if (!context.persistenceData) {
             console.log("going to sleep...");                
-            return ExecutionResult.resolveSleep(new Date(Date.now() + (1000 * 60 * 60)), true);
+            return ExecutionResult.sleep(new Date(Date.now() + (1000 * 60 * 60)), true);
         }
         else {
             console.log("waking up...");
-            return ExecutionResult.resolveNext();
+            return ExecutionResult.next();
         } 
     }
 }
@@ -89,7 +89,7 @@ class AddNumbers extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         this.result = this.number1 + this.number2;
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 

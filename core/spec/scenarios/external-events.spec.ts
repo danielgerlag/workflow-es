@@ -5,7 +5,7 @@
 
      class Step1 extends StepBody {
          public run(context: StepExecutionContext): Promise<ExecutionResult> {            
-             return ExecutionResult.resolveNext();
+             return ExecutionResult.next();
          }
      }    
 

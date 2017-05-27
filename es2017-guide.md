@@ -15,7 +15,7 @@ const workflow_es = require("workflow-es");
 class HelloWorld extends workflow_es.StepBody {
     run(context) {
         console.log("Hello World");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 ```
@@ -50,7 +50,7 @@ class HelloWorld_Workflow {
             .startWith(HelloWorld)
             .thenRun((context) => {
                 console.log("Goodbye world");
-                return workflow_es.ExecutionResult.resolveNext();
+                return workflow_es.ExecutionResult.next();
             });
     }
 }
@@ -67,11 +67,11 @@ class DeferredStep extends workflow_es.StepBody {
     run(context) {
         if (!context.persistenceData) {
             console.log("going to sleep...");
-            return workflow_es.ExecutionResult.resolveSleep(new Date(Date.now() + (1000 * 60 * 60))), true);
+            return workflow_es.ExecutionResult.sleep(new Date(Date.now() + (1000 * 60 * 60))), true);
         }
         else {
             console.log("waking up...");
-            return workflow_es.ExecutionResult.resolveNext();
+            return workflow_es.ExecutionResult.next();
         }
     }
 }
@@ -88,7 +88,7 @@ The following sample shows how to define inputs and outputs on a step, it then s
 class AddNumbers extends workflow_es.StepBody {
     run(context) {
         this.result = this.number1 + this.number2;
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 

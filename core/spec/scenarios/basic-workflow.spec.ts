@@ -11,14 +11,14 @@ import { MemoryPersistenceProvider } from "../../src/services/memory-persistence
      class Step1 extends StepBody {    
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
              basicWorkflowScope.step1Ticker++;
-             return ExecutionResult.resolveNext();
+             return ExecutionResult.next();
          }
      }
 
      class Step2 extends StepBody {    
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
              basicWorkflowScope.step2Ticker++;
-             return ExecutionResult.resolveNext();
+             return ExecutionResult.next();
          }
      }
 

@@ -3,7 +3,7 @@ const workflow_es = require("workflow-es");
 class HelloWorld extends workflow_es.StepBody {
     run(context) {
         console.log("Hello World");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
@@ -17,7 +17,7 @@ class HelloWorld_Workflow {
             .startWith(HelloWorld)
             .thenRun((context) => {
                 console.log("Goodbye world");
-                return workflow_es.ExecutionResult.resolveNext();
+                return workflow_es.ExecutionResult.next();
             });
     }
 }

@@ -14,6 +14,7 @@ export abstract class WorkflowStepBase {
 
     public abstract body: { new(): StepBody; };
     public outcomes: Array<StepOutcome> = [];
+    public children: Array<number> = [];
     public errorBehavior : number;
     public retryInterval : number;
 

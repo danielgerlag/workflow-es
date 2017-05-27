@@ -60,7 +60,7 @@ export class WorkflowHost implements IWorkflowHost {
         
         let ep = new ExecutionPointer();
         ep.active = true;
-        ep.stepId = def.initialStep;
+        ep.stepId = 0;
         ep.id = (Math.random() * 0x10000000000000).toString(16);
         wf.executionPointers.push(ep);
         

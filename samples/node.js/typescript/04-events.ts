@@ -8,7 +8,7 @@ class LogMessage extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log(this.message);
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -31,22 +31,26 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
     }
 }
 
-var config = configure();
-//config.useLogger(new ConsoleLogger());
-//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-var host = config.getHost();
+async function main() {
+    var config = configure();
+    //config.useLogger(new ConsoleLogger());
+    //let mongoPersistence = new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");    
+    //await mongoPersistence.connect;    
+    //config.usePersistence(mongoPersistence);
+    var host = config.getHost();
 
-host.registerWorkflow(EventSample_Workflow);
-host.start();
+    host.registerWorkflow(EventSample_Workflow);
+    await host.start();
 
-setTimeout(() => {
-    host.startWorkflow("event-sample", 1)
-        .then(id => console.log("Started workflow: " + id));
-}, 1000);
+    var myData = new MyDataClass();    
+    let id = await host.startWorkflow("event-sample", 1, myData)
+    console.log("Started workflow: " + id);
 
+    await new Promise(resolve => setTimeout(() => resolve(), 5000));
 
-setTimeout(() => {
     console.log("Publishing event...");
-    host.publishEvent("myEvent", "0", "hi!")
-        .then(() => console.log("Published event"));
-}, 5000);
+    await host.publishEvent("myEvent", "0", "hi!", new Date());
+    console.log("Published event");    
+}
+
+main();

@@ -10,7 +10,7 @@
 
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
              this.result = this.number1 + this.number2;
-             return ExecutionResult.resolveNext();
+             return ExecutionResult.next();
          }
      }    
 

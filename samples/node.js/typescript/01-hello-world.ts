@@ -4,14 +4,14 @@ import { MongoDBPersistence } from "workflow-es-mongodb";
 class HelloWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {        
         console.log("Hello World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
 class GoodbyeWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Goodbye World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 

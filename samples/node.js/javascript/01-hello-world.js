@@ -5,13 +5,13 @@ const workflow_mongo = require("workflow-es-mongodb");
 class HelloWorld extends workflow_es.StepBody {
     run(context) {
         console.log("Hello World");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 class GoodbyeWorld extends workflow_es.StepBody {
     run(context) {
         console.log("Goodbye World");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 class HelloWorld_Workflow {

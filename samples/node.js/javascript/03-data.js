@@ -3,13 +3,13 @@ const workflow_es = require("workflow-es");
 class AddNumbers extends workflow_es.StepBody {
     run(context) {
         this.result = this.number1 + this.number2;
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 class LogMessage extends workflow_es.StepBody {
     run(context) {
         console.log(this.message);
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 

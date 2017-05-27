@@ -9,7 +9,7 @@ class AddNumbers extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         this.result = this.number1 + this.number2;
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -18,7 +18,7 @@ class LogMessage extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log(this.message);
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 

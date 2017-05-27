@@ -5,7 +5,6 @@ import { SubscriptionStep, SubscriptionStepBody } from "../primitives";
 export class WorkflowBuilder<TData> {
     
     private steps: Array<WorkflowStepBase> = [];
-    public initialStep: number = null;    
     public errorBehavior : number = WorkflowErrorHandling.Retry;
     public retryInterval : number = (60 * 1000);
 
@@ -14,7 +13,6 @@ export class WorkflowBuilder<TData> {
         result.id = id;
         result.version = version;
         result.steps = this.steps;
-        result.initialStep = this.initialStep;
         result.errorBehavior = this.errorBehavior;
         result.retryInterval = this.retryInterval;
 
@@ -37,7 +35,6 @@ export class WorkflowBuilder<TData> {
         }
         
         this.addStep(step);
-        this.initialStep = step.id;
         return stepBuilder;
     }
 
@@ -74,7 +71,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
 
         let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
-        outcome.value = null;
+        outcome.value = x => null;
         this.step.outcomes.push(outcome);
                 
         return stepBuilder;
@@ -83,7 +80,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
     public thenStep<TNewStepBody extends StepBody>(newStep: StepBuilder<TNewStepBody, TData>): StepBuilder<TNewStepBody, TData> {
         let outcome = new StepOutcome();
         outcome.nextStep = newStep.step.id;
-        outcome.value = null;
+        outcome.value = x => null;
         this.step.outcomes.push(outcome);
                 
         return newStep;
@@ -104,13 +101,13 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         
         let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
-        outcome.value = null;
+        outcome.value = x => null;
         this.step.outcomes.push(outcome);
                 
         return stepBuilder;
     }
 
-    public when(outcomeValue: any): OutcomeBuilder<TData> {
+    public when(outcomeValue: (data: TData) => any): OutcomeBuilder<TData> {
         let outcome = new StepOutcome();
         outcome.value = outcomeValue;
         this.step.outcomes.push(outcome);
@@ -137,7 +134,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         this.workflowBuilder.addStep(newStep);
         let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
-        outcome.value = null;
+        outcome.value = x => null;
         this.step.outcomes.push(outcome);
         let stepBuilder = new StepBuilder<SubscriptionStepBody, TData>(this.workflowBuilder, newStep);
         return stepBuilder;

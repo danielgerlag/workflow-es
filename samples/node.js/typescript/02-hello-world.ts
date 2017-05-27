@@ -4,7 +4,7 @@ import { MongoDBPersistence } from "workflow-es-mongodb";
 class HelloWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Hello World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -17,7 +17,7 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
             .startWith(HelloWorld)
             .thenRun((context) => {
                 console.log("Goodbye world");                
-                return ExecutionResult.resolveNext();
+                return ExecutionResult.next();
             });
     }
 }

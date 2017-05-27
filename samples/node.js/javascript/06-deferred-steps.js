@@ -4,11 +4,11 @@ class DeferredStep extends workflow_es.StepBody {
     run(context) {
         if (!context.persistenceData) {
             console.log("going to sleep...");
-            return workflow_es.ExecutionResult.resolveSleep(new Date(Date.now() + 5000), true);
+            return workflow_es.ExecutionResult.sleep(new Date(Date.now() + 5000), true);
         }
         else {
             console.log("waking up...");
-            return workflow_es.ExecutionResult.resolveNext();
+            return workflow_es.ExecutionResult.next();
         }
     }
 }
@@ -25,7 +25,7 @@ class DeferSample_Workflow {
             .startWith(DeferredStep)
             .thenRun(context => {
                 console.log("done");
-                return workflow_es.ExecutionResult.resolveNext();
+                return workflow_es.ExecutionResult.next();
             });
     }
 }

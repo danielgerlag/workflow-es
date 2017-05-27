@@ -111,10 +111,17 @@ export class WorkflowExecutor implements IWorkflowExecutor {
     }
 
     processExecutionResult(stepResult: ExecutionResult, pointer: ExecutionPointer, instance: WorkflowInstance, step: WorkflowStepBase) {
+
+        pointer.persistenceData = stepResult.persistenceData;
+        pointer.outcome = stepResult.outcomeValue;
+        if (stepResult.sleep)
+            pointer.sleepUntil = stepResult.sleep.getTime();
+
         if (stepResult.proceed) {
             pointer.active = false;
             pointer.endTime = new Date();
-            for (let outcome of _.where(step.outcomes, { value: stepResult.outcomeValue })) {
+            
+            for (let outcome of step.outcomes.filter(x => (x.value(instance.data) == stepResult.outcomeValue) || (x.value(instance.data) == null))) {
                 let newPointer = new ExecutionPointer();
                 newPointer.active = true;
                 newPointer.predecessorId = pointer.id;
@@ -125,9 +132,19 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             }
         }
         else {
-            pointer.persistenceData = stepResult.persistenceData;
-            if (stepResult.sleep)
-                pointer.sleepUntil = stepResult.sleep.getTime();
+            for (let branch of stepResult.branchValues) {
+                for (let childDefId of step.children) {                    
+                    let childPointer = new ExecutionPointer();
+                    childPointer.id = (Math.random() * 0x10000000000000).toString(16);
+                    childPointer.predecessorId = pointer.id;
+                    childPointer.stepId = childDefId;
+                    childPointer.active = true;
+                    childPointer.contextItem = branch;
+
+                    instance.executionPointers.push(childPointer);
+                    pointer.children.push(childPointer.id);
+                }
+            }
         }
     }
 

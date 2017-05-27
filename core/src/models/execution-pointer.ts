@@ -12,7 +12,7 @@ export class ExecutionPointer {
     public eventKey: any;
     public eventPublished: boolean;
     public eventData: any;
-
+    public outcome: any;
     public stepName: string;
     public retryCount: number;
     public children: string[] = [];

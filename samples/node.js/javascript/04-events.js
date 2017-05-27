@@ -4,7 +4,7 @@ const workflow_mongo = require("workflow-es-mongodb");
 class LogMessage extends workflow_es.StepBody {
     run(context) {
         console.log(this.message);
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
