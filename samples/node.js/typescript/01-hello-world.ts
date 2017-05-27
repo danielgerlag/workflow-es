@@ -25,14 +25,18 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
             .then(GoodbyeWorld);
     }
 }
+async function main() {
+    var config = configure();
+    //config.useLogger(new ConsoleLogger());
+    //let mongoPersistence = new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");    
+    //await mongoPersistence.connect;    
+    //config.usePersistence(mongoPersistence);
+    var host = config.getHost();
 
-var config = configure();
-//config.useLogger(new ConsoleLogger());
-//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-var host = config.getHost();
+    host.registerWorkflow(HelloWorld_Workflow);
+    await host.start();
+    let id = await host.startWorkflow("hello-world", 1);
+    console.log("Started workflow: " + id);
+}
 
-host.registerWorkflow(HelloWorld_Workflow);
-host.start();
-
-host.startWorkflow("hello-world", 1)
-    .then(id => console.log("Started workflow: " + id));
+main();

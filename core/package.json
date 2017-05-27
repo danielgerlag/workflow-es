@@ -1,6 +1,6 @@
 {
   "name": "workflow-es",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "A lightweight workflow engine for Node.JS or the browser",
   "main": "./build/src/index.js",
   "typings": "./build/src/index.d.ts",

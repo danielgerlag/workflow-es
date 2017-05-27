@@ -1,4 +1,5 @@
 const workflow_es = require("workflow-es");
+const workflow_mongo = require("workflow-es-mongodb");
 
 class LogMessage extends workflow_es.StepBody {
     run(context) {
@@ -28,23 +29,27 @@ class EventSample_Workflow {
                 .input((step, data) => step.message = "The event data is " + data.externalValue);
     }
 }
+async function main() {
+    var config = workflow_es.configure();
+    //config.useLogger(new workflow_es.ConsoleLogger());
+    //let mongoPersistence = new workflow_mongo.MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");
+    //await mongoPersistence.connect;
+    //config.usePersistence(mongoPersistence);
+    var host = config.getHost();
 
-var config = workflow_es.configure();
-//config.useLogger(new workflow_es.ConsoleLogger());
-//config.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-var host = config.getHost();
+    host.registerWorkflow(EventSample_Workflow);
+    await host.start();
 
-host.registerWorkflow(EventSample_Workflow);
-host.start();
-setTimeout(() => {
     var myData = new MyDataClass();
     myData.myId = "0";
-    
-    host.startWorkflow("event-sample", 1,  myData )
-        .then(id => console.log("Started workflow: " + id));
-}, 1000);
-setTimeout(() => {
+    let id = await host.startWorkflow("event-sample", 1, myData)
+    console.log("Started workflow: " + id);
+
+    await new Promise(resolve => setTimeout(() => resolve(), 5000));
+
     console.log("Publishing event...");
-    host.publishEvent("myEvent", "0", "hi!", new Date())
-        .then(() => console.log("Published event"));
-}, 5000);
+    await host.publishEvent("myEvent", "0", "hi!", new Date());
+    console.log("Published event");    
+}
+
+main();

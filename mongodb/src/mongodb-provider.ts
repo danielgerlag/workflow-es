@@ -3,7 +3,7 @@ import { MongoClient, ObjectID } from "mongodb";
 
 export class MongoDBPersistence implements IPersistenceProvider {
 
-    private connect: Promise<void>;
+    public connect: Promise<void>;
     private db: any;
     private workflowCollection: any;
     private subscriptionCollection: any;
@@ -11,22 +11,24 @@ export class MongoDBPersistence implements IPersistenceProvider {
     private retryCount: number = 0;
 
     
-    constructor(connectionString: string, connected: () => void = null) {
-        let self = this;
+    constructor(connectionString: string) {
+        var self = this;
         this.connect = new Promise<void>((resolve, reject) => {            
-            MongoClient.connect(connectionString, (err, db) => {                
+            MongoClient.connect(connectionString, (err, db) => {
+                if (err)
+                    reject(err);
+                console.log("connected");                
                 self.db = db;
                 self.workflowCollection = self.db.collection("workflows");
                 self.subscriptionCollection = self.db.collection("subscriptions");
                 self.eventCollection = self.db.collection("events");
-                if (connected)
-                    connected();
+                resolve();
             });
         });        
     }
 
     public async createNewWorkflow(instance: WorkflowInstance): Promise<string> {
-        let self = this;        
+        var self = this;        
         let deferred = new Promise<string>((resolve, reject) => {
             self.workflowCollection.insertOne(instance)
                 .then((err, result) => {
@@ -39,7 +41,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     }
 
     public persistWorkflow(instance: WorkflowInstance): Promise<void> {
-        let self = this;
+        var self = this;
         let deferred = new Promise<void>((resolve, reject) => {            
             var id = ObjectID(instance.id);
             delete instance['_id'];
@@ -54,7 +56,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     }
 
     public getWorkflowInstance(workflowId: string): Promise<WorkflowInstance> {
-        let self = this;
+        var self = this;
         let deferred = new Promise<WorkflowInstance>((resolve, reject) => {            
             self.workflowCollection.findOne({ _id: ObjectID(workflowId) }, ((err, doc) => {
                 if (err)
@@ -149,7 +151,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     }
 
     public async getRunnableEvents(): Promise<Array<string>> {
-        let self = this;
+        var self = this;
         var deferred = new Promise<Array<string>>((resolve, reject) => {            
             self.eventCollection.find({ isProcessed: false, eventTime : { $lt: Date.now() } }, { _id: 1 })
                 .toArray((err, data) => {
@@ -165,7 +167,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     }
     
     public async markEventProcessed(id: string): Promise<void> {
-        let self = this;
+        var self = this;
         let deferred = new Promise<void>((resolve, reject) => {            
             var id = ObjectID(id);
             self.eventCollection.findOneAndModify({ _id: id }, [['_id','asc']], { $set: { isProcessed: true } }, {}, 
@@ -179,7 +181,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     }
 
     public async markEventUnprocessed(id: string): Promise<void> {
-        let self = this;
+        var self = this;
         let deferred = new Promise<void>((resolve, reject) => {            
             var id = ObjectID(id);
             self.eventCollection.findOneAndModify({ _id: id }, [['_id','asc']], { $set: { isProcessed: false } }, {}, 
@@ -193,7 +195,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     }
 
     public async getEvents(eventName: string, eventKey: any, asOf: Date): Promise<Array<string>> {
-        let self = this;
+        var self = this;
         var deferred = new Promise<Array<string>>((resolve, reject) => {            
             self.eventCollection.find({ eventName: eventName, eventKey: eventKey, eventTime : { $gt: asOf } }, { _id: 1 })
                 .toArray((err, data) => {

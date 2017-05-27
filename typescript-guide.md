@@ -155,10 +155,10 @@ When your application starts, create a WorkflowHost service,  call *registerWork
 let config = configure();
 let host = config.getHost();
 host.registerWorkflow(HelloWorld_Workflow);
-host.start();
+await host.start();
 
-host.startWorkflow("hello-world", 1)
-    .then(id => console.log("Started workflow: " + id));
+let id = await host.startWorkflow("hello-world", 1);
+console.log("Started workflow: " + id);
 ```
 
 
