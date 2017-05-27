@@ -47,7 +47,9 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                     let stepContext = new StepExecutionContext();
                     stepContext.persistenceData = pointer.persistenceData;
                     stepContext.step = step;
-                    stepContext.workflow = instance;                        
+                    stepContext.workflow = instance;
+                    stepContext.item = pointer.contextItem;
+                    stepContext.pointer = pointer;
                     
                     let body = new step.body(); //todo: di
 

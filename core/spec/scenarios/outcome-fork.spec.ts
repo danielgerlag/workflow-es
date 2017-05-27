@@ -38,10 +38,10 @@
          public build(builder: WorkflowBuilder<any>) {        
              var taskA = builder.startWith(TaskA);
             
-             taskA.when(false)
+             taskA.when(x => false)
                  .then(TaskB);
             
-             taskA.when(true)
+             taskA.when(x => true)
                  .then(TaskC);
          }
      }

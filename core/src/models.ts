@@ -12,3 +12,4 @@ export * from "./models/workflow-status";
 export * from "./models/workflow-error-handling";
 export * from "./models/execution-pipeline-directive";
 export * from "./models/workflow-executor-result";
+export * from "./models/container-data";
