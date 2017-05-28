@@ -30,10 +30,17 @@ class DeferSample_Workflow {
     }
 }
 
-var host = new workflow_es.WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new DeferSample_Workflow());
-host.start();
-host.startWorkflow("defer-sample", 1)
-    .then(id => console.log("Started workflow: " + id));
+async function main() {
+    var config = workflow_es.configureWorkflow();
+    //config.useLogger(new workflow_es.ConsoleLogger());
+    //let mongoPersistence = new workflow_mongo.MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");    
+    //await mongoPersistence.connect;    
+    //config.usePersistence(mongoPersistence);
+    var host = config.getHost();
+    host.registerWorkflow(new DeferSample_Workflow());
+    await host.start();
+    let id = await host.startWorkflow("defer-sample", 1);
+    console.log("Started workflow: " + id);
+}
+
+main();

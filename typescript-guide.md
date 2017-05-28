@@ -142,6 +142,80 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
 host.publishEvent("myEvent", "0", "hello");
 ```
 
+
+### Flow Control
+
+#### Parallel ForEach
+
+```typescript
+class Foreach_Workflow implements WorkflowBase<MyDataClass> {    
+    public id: string = "foreach-sample";
+    public version: number = 1;
+
+    public build(builder: WorkflowBuilder<MyDataClass>) {        
+        builder
+            .startWith(SayHello)
+            .foreach((data) => ["one", "two", "three"]).do((then) => then
+                .startWith(DisplayContext)
+                .then(DoSomething))
+            .then(SayGoodbye);
+    }
+}
+...
+class DisplayContext extends StepBody {
+    run(context: StepExecutionContext): Promise<ExecutionResult> {
+        console.log(`Working on ${context.item}`);
+        return ExecutionResult.next();
+    }
+}
+```
+
+#### While condition
+
+```typescript
+class While_Workflow implements WorkflowBase<MyDataClass> {    
+    public id: string = "while-sample";
+    public version: number = 1;
+
+    public build(builder: WorkflowBuilder<MyDataClass>) {        
+        builder
+            .startWith(SayHello)
+            .while((data) => data.counter < 3).do((then) => then
+                .startWith(GetIncrement)
+                    .output((step, data) => data.counter += step.increment)
+                .then(DoSomething))
+            .then(SayGoodbye);
+    }
+}
+```
+
+#### If condition
+
+```typescript
+class If_Workflow implements WorkflowBase<MyDataClass> {    
+    public id: string = "if-sample";
+    public version: number = 1;
+
+    public build(builder: WorkflowBuilder<MyDataClass>) {        
+        builder
+            .startWith(SayHello)
+            .if((data) => data.value > 3).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is greater than 3")
+                .then(DoSomething))
+            .if((data) => data.value > 6).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is greater than 6")
+                .then(DoSomething))
+            .if((data) => data.value == 5).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is 5")
+                .then(DoSomething))
+            .then(SayGoodbye);
+    }
+}
+```
+
 ### Host
 
 The workflow host is the service responsible for executing workflows.  It does this by polling the persistence provider for workflow instances that are ready to run, executes them and then passes them back to the persistence provider to by stored for the next time they are run.  It is also responsible for publishing events to any workflows that may be waiting on one.
@@ -166,14 +240,20 @@ console.log("Started workflow: " + id);
 
 ### Node.JS
 
-[Hello World](samples/node.js/typescript/01-hello-world.ts)
+* [Hello World](samples/node.js/typescript/01-hello-world.ts)
 
-[Inline Steps](samples/node.js/typescript/02-hello-world.ts)
+* [Inline Steps](samples/node.js/typescript/02-hello-world.ts)
 
-[Passing Data](samples/node.js/typescript/03-data.ts)
+* [Passing Data](samples/node.js/typescript/03-data.ts)
 
-[Events](samples/node.js/typescript/04-events.ts)
+* [Events](samples/node.js/typescript/04-events.ts)
 
-[Multiple outcomes](samples/node.js/typescript/05-outcomes.ts)
+* [Parallel ForEach](samples/node.js/typescript/07-foreach.ts)
 
-[Deferred execution & re-entrant steps](samples/node.js/typescript/06-deferred-steps.ts)
+* [While loop](samples/node.js/typescript/08-while.ts)
+
+* [If condition](samples/node.js/typescript/09-if.ts)
+
+* [Multiple outcomes](samples/node.js/typescript/05-outcomes.ts)
+
+* [Deferred execution & re-entrant steps](samples/node.js/typescript/06-deferred-steps.ts)

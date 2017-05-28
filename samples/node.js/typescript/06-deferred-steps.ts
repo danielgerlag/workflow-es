@@ -23,16 +23,20 @@ class DeferSample_Workflow implements WorkflowBase<any> {
             .startWith(DeferredStep)
             .thenRun(context => {
                 console.log("done");
-                return ExecutionResult.resolveNext();
+                return ExecutionResult.next();
             });
     }
 }
 
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new DeferSample_Workflow());
-host.start();
+async function main() {
+    var config = configureWorkflow();
+    //config.useLogger(new ConsoleLogger());
+    var host = config.getHost();
 
-host.startWorkflow("defer-sample", 1)
-    .then(id => console.log("Started workflow: " + id));
+    host.registerWorkflow(DeferSample_Workflow);
+    await host.start();
+    let id = await host.startWorkflow("defer-sample", 1, { myValue: 7 });
+    console.log("Started workflow: " + id);
+}
+
+main();

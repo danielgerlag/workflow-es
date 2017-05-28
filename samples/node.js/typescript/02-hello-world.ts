@@ -29,7 +29,7 @@ async function main() {
 
     host.registerWorkflow(HelloWorld_Workflow);
     await host.start();
-    let id = await host.startWorkflow("hello-world", 1);
+    let id = await host.startWorkflow("hello-world", 1, null);
     console.log("Started workflow: " + id);
 }
 
