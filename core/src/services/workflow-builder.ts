@@ -1,6 +1,6 @@
 import { StepBody, InlineStepBody } from "../abstractions";
 import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, WorkflowErrorHandling } from "../models";
-import { SubscriptionStep, SubscriptionStepBody } from "../primitives";
+import { SubscriptionStep, SubscriptionStepBody, Foreach, While, If } from "../primitives";
 
 export class WorkflowBuilder<TData> {
     
@@ -170,6 +170,58 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         }
 
         return null;
+    }
+
+    public foreach(expression: (data :TData) => any[]): StepBuilder<Foreach, TData> {
+        let newStep = new WorkflowStep<Foreach>();
+        newStep.body = Foreach;
+        newStep.inputs.push((step: Foreach, data: any) => step.collection = expression(data));
+        this.workflowBuilder.addStep(newStep);
+        
+        let stepBuilder = new StepBuilder<Foreach, TData>(this.workflowBuilder, newStep);
+
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+
+        return stepBuilder;
+    }
+
+    public while(expression: (data :TData) => boolean): StepBuilder<While, TData> {
+        let newStep = new WorkflowStep<While>();
+        newStep.body = While;
+        newStep.inputs.push((step: While, data: any) => step.condition = expression(data));
+        this.workflowBuilder.addStep(newStep);
+        
+        let stepBuilder = new StepBuilder<While, TData>(this.workflowBuilder, newStep);
+
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+
+        return stepBuilder;
+    }
+
+    public if(expression: (data :TData) => boolean): StepBuilder<If, TData> {
+        let newStep = new WorkflowStep<If>();
+        newStep.body = If;
+        newStep.inputs.push((step: If, data: any) => step.condition = expression(data));
+        this.workflowBuilder.addStep(newStep);
+        
+        let stepBuilder = new StepBuilder<If, TData>(this.workflowBuilder, newStep);
+
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+
+        return stepBuilder;
+    }
+
+    public do(builder: (then: WorkflowBuilder<TData>) => void): StepBuilder<TStepBody, TData> {
+        builder(this.workflowBuilder);
+        this.step.children.push(this.step.id + 1); //TODO: make more elegant                        
+
+        return this;
     }
 
 }
