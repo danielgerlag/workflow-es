@@ -152,7 +152,7 @@ When your application starts, create a WorkflowHost service,  call *registerWork
 
 
 ```TypeScript
-let config = configure();
+let config = configureWorkflow();
 let host = config.getHost();
 host.registerWorkflow(HelloWorld_Workflow);
 await host.start();

@@ -9,9 +9,9 @@ class SayHello extends workflow_es.StepBody {
     }
 }
 
-class DisplayContext extends workflow_es.StepBody {
+class GetIncrement extends workflow_es.StepBody {
     run(context) {
-        console.log(`Working on ${context.item}`);
+        this.increment = 1;
         return workflow_es.ExecutionResult.next();
     }
 }
@@ -31,16 +31,17 @@ class SayGoodbye extends workflow_es.StepBody {
 }
 
 
-class Foreach_Workflow {
+class While_Workflow {
     constructor() {
-        this.id = "foreach-sample";
+        this.id = "while-sample";
         this.version = 1;
     }
     build(builder) {
         builder
             .startWith(SayHello)
-            .foreach((data) => ["one", "two", "three"]).do((then) => then
-                .startWith(DisplayContext)
+            .while((data) => data.counter < 3).do((then) => then
+                .startWith(GetIncrement)
+                    .output((step, data) => data.counter += step.increment)
                 .then(DoSomething))
             .then(SayGoodbye);
     }
@@ -54,10 +55,12 @@ async function main() {
     //config.usePersistence(mongoPersistence);
     var host = config.getHost();
 
-    host.registerWorkflow(Foreach_Workflow);
+    host.registerWorkflow(While_Workflow);
     await host.start();
-    let id = await host.startWorkflow("foreach-sample", 1);
+    let id = await host.startWorkflow("while-sample", 1, { counter: 0 });
     console.log("Started workflow: " + id);
 }
 
 main();
+
+

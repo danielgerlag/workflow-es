@@ -9,9 +9,9 @@ class SayHello extends workflow_es.StepBody {
     }
 }
 
-class DisplayContext extends workflow_es.StepBody {
+class PrintMessage extends workflow_es.StepBody {
     run(context) {
-        console.log(`Working on ${context.item}`);
+        console.log(this.message);
         return workflow_es.ExecutionResult.next();
     }
 }
@@ -31,16 +31,25 @@ class SayGoodbye extends workflow_es.StepBody {
 }
 
 
-class Foreach_Workflow {
+class If_Workflow {
     constructor() {
-        this.id = "foreach-sample";
+        this.id = "if-sample";
         this.version = 1;
     }
     build(builder) {
         builder
             .startWith(SayHello)
-            .foreach((data) => ["one", "two", "three"]).do((then) => then
-                .startWith(DisplayContext)
+            .if((data) => data.value > 3).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is greater than 3")
+                .then(DoSomething))
+            .if((data) => data.value > 6).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is greater than 6")
+                .then(DoSomething))
+            .if((data) => data.value == 5).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is 5")
                 .then(DoSomething))
             .then(SayGoodbye);
     }
@@ -54,9 +63,9 @@ async function main() {
     //config.usePersistence(mongoPersistence);
     var host = config.getHost();
 
-    host.registerWorkflow(Foreach_Workflow);
+    host.registerWorkflow(If_Workflow);
     await host.start();
-    let id = await host.startWorkflow("foreach-sample", 1);
+    let id = await host.startWorkflow("if-sample", 1, { value: 5 });
     console.log("Started workflow: " + id);
 }
 

@@ -26,7 +26,7 @@ class OutcomeSample_Workflow {
 }
 
 async function main() {
-    var config = workflow_es.configure();
+    var config = workflow_es.configureWorkflow();
     //config.useLogger(new workflow_es.ConsoleLogger());
     var host = config.getHost();
 

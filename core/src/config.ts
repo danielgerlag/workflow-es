@@ -35,7 +35,7 @@ export class WorkflowConfig {
     }
 }
 
-export function configure(): WorkflowConfig {
+export function configureWorkflow(): WorkflowConfig {
     let workflowModule = new ContainerModule((bind: interfaces.Bind, unbind: interfaces.Unbind) => {        
         bind<ILogger>(TYPES.ILogger).to(NullLogger);        
         bind<IQueueProvider>(TYPES.IQueueProvider).to(SingleNodeQueueProvider).inSingletonScope();

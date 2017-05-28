@@ -1,4 +1,4 @@
- import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configure, ConsoleLogger } from "../../src";
+ import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "../../src";
  import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 
  describe("external events", () => {
@@ -28,7 +28,7 @@
      var workflowId = null;
      var instance = null;
      var persistence = new MemoryPersistenceProvider();
-     var config = configure();
+     var config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
      var host = config.getHost();

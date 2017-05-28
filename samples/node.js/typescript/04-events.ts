@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configure, ConsoleLogger } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 
@@ -32,7 +32,7 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
 }
 
 async function main() {
-    var config = configure();
+    var config = configureWorkflow();
     //config.useLogger(new ConsoleLogger());
     //let mongoPersistence = new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");    
     //await mongoPersistence.connect;    

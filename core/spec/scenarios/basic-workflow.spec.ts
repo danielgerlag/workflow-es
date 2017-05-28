@@ -1,4 +1,4 @@
-import { configure, WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, ConsoleLogger } from "../../src";
+import { configureWorkflow, WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, ConsoleLogger } from "../../src";
 import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 
  var basicWorkflowScope = {
@@ -37,7 +37,7 @@ import { MemoryPersistenceProvider } from "../../src/services/memory-persistence
      var instance = null;
      
      var persistence = new MemoryPersistenceProvider();
-     var config = configure();
+     var config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
      var host = config.getHost();

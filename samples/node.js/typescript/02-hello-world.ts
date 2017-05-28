@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configure, ConsoleLogger } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 class HelloWorld extends StepBody {    
@@ -23,7 +23,7 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
 }
 
 async function main() {
-    var config = configure();
+    var config = configureWorkflow();
     //config.useLogger(new ConsoleLogger());
     var host = config.getHost();
 

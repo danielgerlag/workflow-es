@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configure, ConsoleLogger } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 
@@ -45,7 +45,7 @@ class DataSample_Workflow implements WorkflowBase<MyDataClass> {
 }
 
 async function main() {
-    var config = configure();
+    var config = configureWorkflow();
     //config.useLogger(new ConsoleLogger());
     var host = config.getHost();
 

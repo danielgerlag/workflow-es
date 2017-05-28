@@ -30,7 +30,7 @@ class EventSample_Workflow {
     }
 }
 async function main() {
-    var config = workflow_es.configure();
+    var config = workflow_es.configureWorkflow();
     //config.useLogger(new workflow_es.ConsoleLogger());
     //let mongoPersistence = new workflow_mongo.MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");
     //await mongoPersistence.connect;
