@@ -6,10 +6,12 @@
         "declaration": true,
         "noImplicitAny": false,
         "allowSyntheticDefaultImports": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "lib": [
             "es2017"
-        ]
+        ],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "exclude": [
         "node_modules"
@@ -18,6 +20,6 @@
         "spec/**/*.ts"
     ],
     "files": [
-        "src/index.ts"        
+        "src/index.ts"
     ]
 }

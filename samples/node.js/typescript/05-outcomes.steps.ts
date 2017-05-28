@@ -10,35 +10,35 @@ export class SelectOutcome extends StepBody {
         if (this.myValue > 5)
             result = 1;
 
-        return ExecutionResult.resolveOutcome(result);
+        return ExecutionResult.outcome(result);
     }
 }
 
 export class TaskA extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Doing Task A");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
 export class TaskB extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Doing Task B");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
 export class TaskC extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Doing Task C");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
 export class TaskD extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Doing Task D");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 

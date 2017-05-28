@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 
@@ -9,7 +9,7 @@ class AddNumbers extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         this.result = this.number1 + this.number2;
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -18,7 +18,7 @@ class LogMessage extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log(this.message);
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -44,13 +44,15 @@ class DataSample_Workflow implements WorkflowBase<MyDataClass> {
     }
 }
 
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new DataSample_Workflow());
-host.start();
+async function main() {
+    var config = configureWorkflow();
+    //config.useLogger(new ConsoleLogger());
+    var host = config.getHost();
 
-host.startWorkflow("data-sample", 1, { value1: 2, value2: 7 })
-    .then(id => console.log("Started workflow: " + id));
+    host.registerWorkflow(DataSample_Workflow);
+    await host.start();
+    let id = await host.startWorkflow("data-sample", 1, { value1: 2, value2: 7 });
+    console.log("Started workflow: " + id);
+}
 
-
+main();

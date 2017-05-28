@@ -5,35 +5,35 @@ class SelectOutcome extends workflow_es.StepBody {
         var result = 0;
         if (this.myValue > 5)
             result = 1;
-        return workflow_es.ExecutionResult.resolveOutcome(result);
+        return workflow_es.ExecutionResult.outcome(result);
     }
 }
 
 class TaskA extends workflow_es.StepBody {
     run(context) {
         console.log("Doing Task A");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
 class TaskB extends workflow_es.StepBody {
     run(context) {
         console.log("Doing Task B");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
 class TaskC extends workflow_es.StepBody {
     run(context) {
         console.log("Doing Task C");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
 class TaskD extends workflow_es.StepBody {
     run(context) {
         console.log("Doing Task D");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 

@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 import { SelectOutcome, TaskA, TaskB, TaskC, TaskD } from "./05-outcomes.steps";
 
@@ -27,14 +27,15 @@ class OutcomeSample_Workflow implements WorkflowBase<MyDataClass> {
     }
 }
 
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new OutcomeSample_Workflow());
-host.start();
+async function main() {
+    var config = configureWorkflow();
+    //config.useLogger(new ConsoleLogger());
+    var host = config.getHost();
 
-host.startWorkflow("outcome-sample", 1, { myValue: 7 })
-    .then(id => console.log("Started workflow: " + id));
+    host.registerWorkflow(OutcomeSample_Workflow);
+    await host.start();
+    let id = await host.startWorkflow("outcome-sample", 1, { myValue: 7 });
+    console.log("Started workflow: " + id);
+}
 
-
-
+main();

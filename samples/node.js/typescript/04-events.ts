@@ -1,4 +1,4 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 
@@ -8,7 +8,7 @@ class LogMessage extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log(this.message);
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -24,27 +24,33 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
         builder
             .startWith(LogMessage)
                 .input((step, data) => step.message = "Waiting for event...")
-            .waitFor("myEvent", "0")
+            .waitFor("myEvent", data => "0")
                 .output((step, data) => data.externalValue = step.eventData)
             .then(LogMessage)
                 .input((step, data) => step.message = "The event data is " + data.externalValue)
     }
 }
 
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new EventSample_Workflow());
-host.start();
+async function main() {
+    var config = configureWorkflow();
+    //config.useLogger(new ConsoleLogger());
+    //let mongoPersistence = new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");    
+    //await mongoPersistence.connect;    
+    //config.usePersistence(mongoPersistence);
+    var host = config.getHost();
 
-setTimeout(() => {
-    host.startWorkflow("event-sample", 1)
-        .then(id => console.log("Started workflow: " + id));
-}, 1000);
+    host.registerWorkflow(EventSample_Workflow);
+    await host.start();
 
+    var myData = new MyDataClass();    
+    let id = await host.startWorkflow("event-sample", 1, myData)
+    console.log("Started workflow: " + id);
 
-setTimeout(() => {
+    await new Promise(resolve => setTimeout(() => resolve(), 5000));
+
     console.log("Publishing event...");
-    host.publishEvent("myEvent", "0", "hi!")
-        .then(() => console.log("Published event"));
-}, 5000);
+    await host.publishEvent("myEvent", "0", "hi!", new Date());
+    console.log("Published event");    
+}
+
+main();

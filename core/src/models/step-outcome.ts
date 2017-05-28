@@ -1,4 +1,8 @@
 export class StepOutcome {
-    public value: any;
+    public value: (data: any) => any;
     public nextStep: number;
+
+    constructor() {
+        this.value = x => null;
+    }
 }

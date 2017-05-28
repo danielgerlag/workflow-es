@@ -8,8 +8,8 @@
     "typescript": "^2.2.1"
   },
   "dependencies": {
-    "workflow-es": "^1.0.3",
-    "workflow-es-mongodb": "^1.0.3",
+    "workflow-es": "^2.0.0",
+    "workflow-es-mongodb": "^2.0.0",
     "@types/es6-promise": "0.0.32",    
     "mongodb": "^2.2.11"
   }

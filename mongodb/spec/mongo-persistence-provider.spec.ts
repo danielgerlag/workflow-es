@@ -8,7 +8,11 @@ describe("mongodb-provider", () => {
     var wf1: WorkflowInstance;    
 
     beforeAll((done) => {
-        persistence = new MongoDBPersistence("mongodb://127.0.0.1:27019/tests", () => done());
+        var mongoProvider = new MongoDBPersistence("mongodb://127.0.0.1:27019/tests");        
+        mongoProvider.connect.then(() => {
+            persistence = mongoProvider;
+            done();
+        });
     });
 
     describe("createNewWorkflow", () => { 

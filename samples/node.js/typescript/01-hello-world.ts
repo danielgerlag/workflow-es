@@ -1,17 +1,17 @@
-import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance } from "workflow-es";
+import { WorkflowHost, WorkflowBuilder, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "workflow-es";
 import { MongoDBPersistence } from "workflow-es-mongodb";
 
 class HelloWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {        
         console.log("Hello World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
 class GoodbyeWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Goodbye World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -25,12 +25,18 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
             .then(GoodbyeWorld);
     }
 }
+async function main() {
+    var config = configureWorkflow();
+    //config.useLogger(new ConsoleLogger());
+    //let mongoPersistence = new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");    
+    //await mongoPersistence.connect;    
+    //config.usePersistence(mongoPersistence);
+    var host = config.getHost();
 
-var host = new WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new HelloWorld_Workflow());
-host.start();
+    host.registerWorkflow(HelloWorld_Workflow);
+    await host.start();
+    let id = await host.startWorkflow("hello-world", 1);
+    console.log("Started workflow: " + id);
+}
 
-host.startWorkflow("hello-world", 1)
-    .then(id => console.log("Started workflow: " + id));
+main();

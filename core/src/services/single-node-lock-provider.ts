@@ -1,21 +1,23 @@
+import { injectable, inject } from "inversify";
 import { IDistributedLockProvider } from "../abstractions";
 
+var wfc_locks: Array<string> = [];
+
 // Single node in-memory implementation of IDistributedLockProvider (not really distributed)
+@injectable()
 export class SingleNodeLockProvider implements IDistributedLockProvider {
     
-    private locks: Array<string> = [];
-
     public async aquireLock(id: string): Promise<boolean> {
-        if (this.locks.indexOf(id) > -1) {
+        if (wfc_locks.indexOf(id) > -1) {
             return false;
         }
-        this.locks.push(id);
+        wfc_locks.push(id);
         return true;       
     }
 
     public async releaseLock(id: string): Promise<void> {        
-        if (this.locks.indexOf(id) > -1) {
-            this.locks.splice(this.locks.indexOf(id), 1);
+        if (wfc_locks.indexOf(id) > -1) {
+            wfc_locks.splice(wfc_locks.indexOf(id), 1);
         }
     }
 }

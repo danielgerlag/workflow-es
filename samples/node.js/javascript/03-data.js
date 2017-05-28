@@ -3,13 +3,13 @@ const workflow_es = require("workflow-es");
 class AddNumbers extends workflow_es.StepBody {
     run(context) {
         this.result = this.number1 + this.number2;
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 class LogMessage extends workflow_es.StepBody {
     run(context) {
         console.log(this.message);
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
@@ -28,10 +28,16 @@ class DataSample_Workflow {
                 .input((step, data) => step.message = "The answer is " + data.value3);
     }
 }
-var host = new workflow_es.WorkflowHost();
-//host.usePersistence(new MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node"));
-//host.useLogger(console);
-host.registerWorkflow(new DataSample_Workflow());
-host.start();
-host.startWorkflow("data-sample", 1, { value1: 2, value2: 7 })
-    .then(id => console.log("Started workflow: " + id));
+
+async function main() {
+    var config = workflow_es.configureWorkflow();
+    //config.useLogger(new workflow_es.ConsoleLogger());
+    var host = config.getHost();
+
+    host.registerWorkflow(DataSample_Workflow);
+    await host.start();
+    let id = await host.startWorkflow("data-sample", 1, { value1: 2, value2: 7 });
+    console.log("Started workflow: " + id);
+}
+
+main();

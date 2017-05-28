@@ -4,7 +4,7 @@
 
 ### Steps
 
-A workflow consists of a series of connected steps.  Each step produces an outcome value and subsequent steps are triggered by subscribing to a particular outcome of a preceeding step.  The default outcome of *null* can be used for a basic linear workflow.
+A workflow consists of a series of connected steps.  Each step produces an outcome value and subsequent steps are triggered by subscribing to a particular outcome of a preceeding step.
 Steps are usually defined by inheriting from the StepBody abstract class and implementing the *run* method.  They can also be created inline while defining the workflow structure.
 
 First we define some steps
@@ -13,7 +13,7 @@ First we define some steps
 class HelloWorld extends StepBody {    
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("Hello World");
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 ```
@@ -46,7 +46,7 @@ class HelloWorld_Workflow implements WorkflowBase<any> {
             .startWith(HelloWorld)
             .thenRun((context) => {
                 console.log("Goodbye world");                
-                return ExecutionResult.resolveNext();
+                return ExecutionResult.next();
             });
     }
 }
@@ -64,11 +64,11 @@ class DeferredStep extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         if (!context.persistenceData) {
             console.log("going to sleep...");                
-            return ExecutionResult.resolveSleep(new Date(Date.now() + (1000 * 60 * 60)), true);
+            return ExecutionResult.sleep(new Date(Date.now() + (1000 * 60 * 60)), true);
         }
         else {
             console.log("waking up...");
-            return ExecutionResult.resolveNext();
+            return ExecutionResult.next();
         } 
     }
 }
@@ -89,7 +89,7 @@ class AddNumbers extends StepBody {
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         this.result = this.number1 + this.number2;
-        return ExecutionResult.resolveNext();
+        return ExecutionResult.next();
     }
 }
 
@@ -130,7 +130,7 @@ class EventSample_Workflow implements WorkflowBase<MyDataClass> {
         builder
             .startWith(LogMessage)
                 .input((step, data) => step.message = "Waiting for event...")
-            .waitFor("myEvent", "0")
+            .waitFor("myEvent", data => "0")
                 .output((step, data) => data.externalValue = step.eventData)
             .then(LogMessage)
                 .input((step, data) => step.message = "The event data is " + data.externalValue)
@@ -152,13 +152,13 @@ When your application starts, create a WorkflowHost service,  call *registerWork
 
 
 ```TypeScript
-var host = new WorkflowHost();
-host.useLogger(console);
-host.registerWorkflow(new HelloWorld_Workflow());
-host.start();
+let config = configureWorkflow();
+let host = config.getHost();
+host.registerWorkflow(HelloWorld_Workflow);
+await host.start();
 
-host.startWorkflow("hello-world", 1)
-    .then(id => console.log("Started workflow: " + id));
+let id = await host.startWorkflow("hello-world", 1);
+console.log("Started workflow: " + id);
 ```
 
 

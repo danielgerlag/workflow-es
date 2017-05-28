@@ -4,7 +4,7 @@
 
 ### Steps
 
-A workflow consists of a series of connected steps.  Each step produces an outcome value and subsequent steps are triggered by subscribing to a particular outcome of a preceeding step.  The default outcome of *null* can be used for a basic linear workflow.
+A workflow consists of a series of connected steps.  Each step produces an outcome value and subsequent steps are triggered by subscribing to a particular outcome of a preceeding step.
 Steps are usually defined by inheriting from the StepBody abstract class and implementing the *run* method.  They can also be created inline while defining the workflow structure.
 
 First we define some steps
@@ -15,7 +15,7 @@ const workflow_es = require("workflow-es");
 class HelloWorld extends workflow_es.StepBody {
     run(context) {
         console.log("Hello World");
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 ```
@@ -50,7 +50,7 @@ class HelloWorld_Workflow {
             .startWith(HelloWorld)
             .thenRun((context) => {
                 console.log("Goodbye world");
-                return workflow_es.ExecutionResult.resolveNext();
+                return workflow_es.ExecutionResult.next();
             });
     }
 }
@@ -67,11 +67,11 @@ class DeferredStep extends workflow_es.StepBody {
     run(context) {
         if (!context.persistenceData) {
             console.log("going to sleep...");
-            return workflow_es.ExecutionResult.resolveSleep(new Date(Date.now() + (1000 * 60 * 60))), true);
+            return workflow_es.ExecutionResult.sleep(new Date(Date.now() + (1000 * 60 * 60))), true);
         }
         else {
             console.log("waking up...");
-            return workflow_es.ExecutionResult.resolveNext();
+            return workflow_es.ExecutionResult.next();
         }
     }
 }
@@ -88,7 +88,7 @@ The following sample shows how to define inputs and outputs on a step, it then s
 class AddNumbers extends workflow_es.StepBody {
     run(context) {
         this.result = this.number1 + this.number2;
-        return workflow_es.ExecutionResult.resolveNext();
+        return workflow_es.ExecutionResult.next();
     }
 }
 
@@ -124,7 +124,7 @@ class EventSample_Workflow {
         builder
             .startWith(LogMessage)
                 .input((step, data) => step.message = "Waiting for event...")
-                .waitFor("myEvent", "0")
+            .waitFor("myEvent", data => "0")
                 .output((step, data) => data.externalValue = step.eventData)
             .then(LogMessage)
                 .input((step, data) => step.message = "The event data is " + data.externalValue);
@@ -134,6 +134,82 @@ class EventSample_Workflow {
 //External events are published via the host
 //All workflows that have subscribed to MyEvent 0, will be passed "hello"
 host.publishEvent("myEvent", "0", "hello");
+```
+
+### Flow Control
+
+#### Parallel ForEach
+
+```javascript
+class Sample_Workflow {
+    constructor() {
+        this.id = "sample";
+        this.version = 1;
+    }
+    build(builder) {
+        builder
+            .startWith(SayHello)
+            .foreach((data) => ["one", "two", "three"]).do((then) => then
+                .startWith(DisplayContext)
+                .then(DoSomething))
+            .then(SayGoodbye);
+    }
+}
+...
+class DisplayContext extends workflow_es.StepBody {
+    run(context) {
+        console.log(`Working on ${context.item}`);
+        return workflow_es.ExecutionResult.next();
+    }
+}
+```
+
+#### While condition
+
+```javascript
+class Sample_Workflow {
+    constructor() {
+        this.id = "sample";
+        this.version = 1;
+    }
+    build(builder) {
+        builder
+            .startWith(SayHello)
+            .while((data) => data.counter < 3).do((then) => then
+                .startWith(GetIncrement)
+                    .output((step, data) => data.counter += step.increment)
+                .then(DoSomething))
+            .then(SayGoodbye);
+    }
+}
+```
+
+#### If condition
+
+```javascript
+class Sample_Workflow {
+    constructor() {
+        this.id = "sample";
+        this.version = 1;
+    }
+    build(builder) {
+        builder
+            .startWith(SayHello)
+            .if((data) => data.value > 3).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is greater than 3")
+                .then(DoSomething))
+            .if((data) => data.value > 6).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is greater than 6")
+                .then(DoSomething))
+            .if((data) => data.value == 5).do((then) => then
+                .startWith(PrintMessage)
+                    .input((step, data) => step.message = "Value is 5")
+                .then(DoSomething))
+            .then(SayGoodbye);
+    }
+}
 ```
 
 ### Host
@@ -148,28 +224,32 @@ When your application starts, create a WorkflowHost service,  call *registerWork
 ```javascript
 const workflow_es = require("workflow-es");
 ...
-var host = new workflow_es.WorkflowHost();
-host.useLogger(console);
-host.registerWorkflow(new HelloWorld_Workflow());
-host.start();
+let config = workflow_es.configureWorkflow();
+let host = config.getHost();
+host.registerWorkflow(HelloWorld_Workflow);
+await host.start();
 
-host.startWorkflow("hello-world", 1)
-    .then(id => console.log("Started workflow: " + id));
+let id = await host.startWorkflow("hello-world", 1);
+console.log("Started workflow: " + id);
 ```
 
 
 ## Samples
 
-### Node.JS
+* [Hello World](samples/node.js/javascript/01-hello-world.js)
 
-[Hello World](samples/node.js/javascript/01-hello-world.js)
+* [Inline Steps](samples/node.js/javascript/02-hello-world.js)
 
-[Inline Steps](samples/node.js/javascript/02-hello-world.js)
+* [Passing Data](samples/node.js/javascript/03-data.js)
 
-[Passing Data](samples/node.js/javascript/03-data.js)
+* [Events](samples/node.js/javascript/04-events.js)
 
-[Events](samples/node.js/javascript/04-events.js)
+* [Parallel ForEach](samples/node.js/javascript/07-foreach.js)
 
-[Multiple outcomes](samples/node.js/javascript/05-outcomes.js)
+* [While loop](samples/node.js/javascript/08-while.js)
 
-[Deferred execution & re-entrant steps](samples/node.js/javascript/06-deferred-steps.js)
+* [If condition](samples/node.js/javascript/09-if.js)
+
+* [Multiple outcomes](samples/node.js/javascript/05-outcomes.js)
+
+* [Deferred execution & re-entrant steps](samples/node.js/javascript/06-deferred-steps.js)

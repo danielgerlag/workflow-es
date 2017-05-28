@@ -1,25 +1,29 @@
-import { IQueueProvider } from "../abstractions";
-import { EventPublication } from "../models";
+import { injectable, inject } from "inversify";
+import { IQueueProvider, QueueType } from "../abstractions";
 
+var processQueue: Array<string> = [];
+var publishQueue: Array<string> = [];
+
+@injectable()
 export class SingleNodeQueueProvider implements IQueueProvider {
 
-    private processQueue: Array<string> = [];
-    private publishQueue: Array<EventPublication> = [];
-
-    public async queueForProcessing(workflowId: string): Promise<void> {
-        this.processQueue.push(workflowId);
+    public async queueForProcessing(id: string, queue: any): Promise<void> {
+        switch (queue) {
+            case QueueType.Workflow:
+                processQueue.push(id);
+                break;
+            case QueueType.Event:
+                publishQueue.push(id);
+                break;
+        }        
     }
 
-    public async dequeueForProcessing(): Promise<string> {
-        return this.processQueue.shift();
+    public async dequeueForProcessing(queue: any): Promise<string> {
+        switch (queue) {
+            case QueueType.Workflow:
+                return processQueue.shift();
+            case QueueType.Event:
+                return publishQueue.shift();
+        }
     }
-
-    public async queueForPublish(publication: EventPublication): Promise<void> {
-        this.publishQueue.push(publication);
-    }
-
-    public async dequeueForPublish(): Promise<EventPublication> {
-        return this.publishQueue.shift();
-    }
-
 }
