@@ -163,9 +163,10 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             }
             instance.nextExecution = Math.min(pointer.sleepUntil, instance.nextExecution ? instance.nextExecution : pointer.sleepUntil);
         }
+        
         if (instance.nextExecution === null) {            
             for (let pointer of instance.executionPointers.filter(x => x.active && x.children.length > 0)) {
-                if (instance.executionPointers.filter(x => x.children.includes(pointer.id)).every(x => !x.endTime)) {
+                if (instance.executionPointers.filter(x => x.children.includes(pointer.id)).every(x => this.isBranchComplete(instance.executionPointers, x.id))) {
                     instance.nextExecution = 0;
                     return;
                 }
@@ -176,6 +177,22 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             instance.completeTime = new Date();
             instance.status = WorkflowStatus.Complete;
         }
+    }
+
+    isBranchComplete(pointers: ExecutionPointer[], rootId: string): boolean {
+        let root = pointers.find(x => x.id == rootId);
+
+        if (!root.endTime)
+            return false;
+
+        let list = pointers.filter(x => x.predecessorId == rootId);
+
+        let result = true;
+
+        for(let item of list)
+            result = result && this.isBranchComplete(pointers, item.id);
+
+        return result;
     }
 
 }

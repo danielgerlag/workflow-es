@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Workflow samples for node.js",  
   "dependencies": {
-    "workflow-es": "^2.0.0",
+    "workflow-es": "^2.0.1",
     "workflow-es-mongodb": "^2.0.0",
     "mongodb": "^2.2.11"
   }
