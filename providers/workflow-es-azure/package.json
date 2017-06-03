@@ -1,0 +1,39 @@
+{
+  "name": "workflow-es-azure",
+  "version": "2.0.0",
+  "description": "Azure providers for Workflow ES",
+  "main": "./build/src/index.js",
+  "typings": "./build/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jasmine"
+  },
+  "keywords": [
+    "workflow",
+    "azure"
+  ],
+  "author": {
+    "email": "daniel@gerlag.ca",
+    "name": "Daniel Gerlag"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^6.0.51",
+    "@types/jasmine": "^2.5.38",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.4.1",
+    "typescript": "^2.2.1"
+  },
+  "dependencies": {
+    "inversify": "^4.1.0",
+    "json-stable-stringify": "^1.0.1",
+    "azure-storage": "^2.1.0",
+    "mongodb": "^2.2.11",
+    "reflect-metadata": "^0.1.10",
+    "workflow-es": "^2.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgerlag/workflow-es.git"
+  }
+}
