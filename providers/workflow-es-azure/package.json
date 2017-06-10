@@ -1,9 +1,9 @@
 {
   "name": "workflow-es-azure",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Azure providers for Workflow ES",
-  "main": "./build/src/index.js",
-  "typings": "./build/src/index.d.ts",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jasmine"
@@ -28,7 +28,6 @@
     "inversify": "^4.1.0",
     "json-stable-stringify": "^1.0.1",
     "azure-storage": "^2.1.0",
-    "mongodb": "^2.2.11",
     "reflect-metadata": "^0.1.10",
     "workflow-es": "^2.0.1"
   },

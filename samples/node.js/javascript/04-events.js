@@ -1,5 +1,6 @@
 const workflow_es = require("workflow-es");
 const workflow_mongo = require("workflow-es-mongodb");
+const workflow_azure = require("workflow-es-azure");
 
 class LogMessage extends workflow_es.StepBody {
     run(context) {
@@ -31,10 +32,13 @@ class EventSample_Workflow {
 }
 async function main() {
     var config = workflow_es.configureWorkflow();
-    //config.useLogger(new workflow_es.ConsoleLogger());
+    config.useLogger(new workflow_es.ConsoleLogger());
     //let mongoPersistence = new workflow_mongo.MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");
     //await mongoPersistence.connect;
     //config.usePersistence(mongoPersistence);
+    //config.useLockManager(new workflow_azure.AzureLockManager('UseDevelopmentStorage=true'));    
+    //config.useQueueManager(new workflow_azure.AzureQueueProvider('UseDevelopmentStorage=true'));
+
     var host = config.getHost();
 
     host.registerWorkflow(EventSample_Workflow);

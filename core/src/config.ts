@@ -26,8 +26,8 @@ export class WorkflowConfig {
         this.container.rebind<IQueueProvider>(TYPES.IQueueProvider).toConstantValue(service);
     }
 
-    public useLockManager(service: IDistributedLockProvider) {
-        this.container.rebind<IDistributedLockProvider>(TYPES.IDistributedLockProvider).toConstantValue(service);
+    public useLockManager(service: IDistributedLockProvider) {        
+        this.container.rebind<IDistributedLockProvider>(TYPES.IDistributedLockProvider).toConstantValue(service);        
     }
 
     public getHost(): IWorkflowHost {
