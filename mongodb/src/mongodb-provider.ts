@@ -17,7 +17,6 @@ export class MongoDBPersistence implements IPersistenceProvider {
             MongoClient.connect(connectionString, (err, db) => {
                 if (err)
                     reject(err);
-                console.log("connected");                
                 self.db = db;
                 self.workflowCollection = self.db.collection("workflows");
                 self.subscriptionCollection = self.db.collection("subscriptions");

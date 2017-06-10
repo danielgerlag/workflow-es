@@ -1,6 +1,6 @@
 # MongoDB Persistence provider for Workflow ES
 
-Provides support to persist workflows running on [Workflow ES](../README.md) to a MongoDB database.
+Provides support to persist workflows running on [Workflow ES](https://github.com/danielgerlag/workflow-es) to a MongoDB database.
 
 ## Installing
 
@@ -18,7 +18,7 @@ Use the .usePersistence() method when setting up your workflow host.
 const workflow_es = require("workflow-es");
 const workflow_mongo = require("workflow-es-mongodb");
 ...
-var config = workflow_es.configure();
+var config = workflow_es.configureWorkflow();
 let mongoPersistence = new workflow_mongo.MongoDBPersistence("mongodb://127.0.0.1:27017/workflow-node");
 await mongoPersistence.connect;    
 config.usePersistence(mongoPersistence);

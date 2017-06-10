@@ -1,18 +1,16 @@
 {
-  "name": "workflow-es-mongodb",
+  "name": "workflow-es-azure",
   "version": "2.0.1",
-  "description": "MongoDB provider for Workflow ES",
-  "main": "./build/src/index.js",
-  "typings": "./build/src/index.d.ts",
+  "description": "Azure providers for Workflow ES",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",
-    "test": "jasmine",
-    "posttest": "docker kill workflow-es-tests && docker rm workflow-es-tests"
+    "test": "jasmine"
   },
   "keywords": [
     "workflow",
-    "mongodb"
+    "azure"
   ],
   "author": {
     "email": "daniel@gerlag.ca",
@@ -29,7 +27,7 @@
   "dependencies": {
     "inversify": "^4.1.0",
     "json-stable-stringify": "^1.0.1",
-    "mongodb": "^2.2.11",
+    "azure-storage": "^2.1.0",
     "reflect-metadata": "^0.1.10",
     "workflow-es": "^2.0.1"
   },
