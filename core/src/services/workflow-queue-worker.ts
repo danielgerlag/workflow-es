@@ -25,7 +25,7 @@ export class WorkflowQueueWorker implements IBackgroundWorker {
     private processTimer: any;
 
     public start() {        
-        this.processTimer = setInterval(this.processQueue, 500, this);
+        this.processTimer = setInterval(this.processQueue, 100, this);
     }
 
     public stop() {

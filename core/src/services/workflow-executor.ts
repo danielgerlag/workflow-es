@@ -166,9 +166,12 @@ export class WorkflowExecutor implements IWorkflowExecutor {
         
         if (instance.nextExecution === null) {            
             for (let pointer of instance.executionPointers.filter(x => x.active && x.children.length > 0)) {
-                if (instance.executionPointers.filter(x => x.children.includes(pointer.id)).every(x => this.isBranchComplete(instance.executionPointers, x.id))) {
-                    instance.nextExecution = 0;
-                    return;
+                if (instance.executionPointers.filter(x => x.children.includes(pointer.id)).every(x => this.isBranchComplete(instance.executionPointers, x.id))) {                    
+                    if (!pointer.sleepUntil) {
+                        instance.nextExecution = 0;
+                        return;
+                    }
+                    instance.nextExecution = Math.min(pointer.sleepUntil, instance.nextExecution ? instance.nextExecution : pointer.sleepUntil);
                 }
             }            
         }
