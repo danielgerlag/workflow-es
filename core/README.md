@@ -35,15 +35,15 @@ By default, the WorkflowHost service will run as a single node using the built-i
 #### Queue Providers
 
 * SingleNodeQueueProvider *(Default built-in provider)*
+* [Azure](https://github.com/danielgerlag/workflow-es/tree/master/providers/workflow-es-azure)
 * RabbitMQ *(coming soon...)*
-* Apache ZooKeeper *(coming soon...)*
-* 0MQ *(coming soon...)*
+
 
 #### Distributed lock managers
 
 * SingleNodeLockProvider *(Default built-in provider)*
+* [Azure](https://github.com/danielgerlag/workflow-es/tree/master/providers/workflow-es-azure)
 * Redis Redlock *(coming soon...)*
-* Apache ZooKeeper *(coming soon...)*
 
 
 ## Authors
