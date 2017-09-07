@@ -14,11 +14,11 @@ class OutcomeSample_Workflow {
             .startWith(steps.SelectOutcome)
                 .name("Determine Future")
                 .input((step, data) => step.myValue = data.myValue)
-                .when(0)
+                .when(data => 0)
                     .then(steps.TaskA)
                     .then(steps.TaskB)
                 .end("Determine Future")
-                .when(1)
+                .when(data => 1)
                     .then(steps.TaskC)
                     .then(steps.TaskD)
                 .end("Determine Future");
