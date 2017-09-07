@@ -151,8 +151,8 @@ export class MongoDBPersistence implements IPersistenceProvider {
 
     public async getRunnableEvents(): Promise<Array<string>> {
         var self = this;
-        var deferred = new Promise<Array<string>>((resolve, reject) => {            
-            self.eventCollection.find({ isProcessed: false, eventTime : { $lt: Date.now() } }, { _id: 1 })
+        var deferred = new Promise<Array<string>>((resolve, reject) => {
+            self.eventCollection.find({ isProcessed: false, eventTime : { $lt: new Date() } }, { _id: 1 })
                 .toArray((err, data) => {
                     if (err)
                         reject(err);
@@ -167,9 +167,8 @@ export class MongoDBPersistence implements IPersistenceProvider {
     
     public async markEventProcessed(id: string): Promise<void> {
         var self = this;
-        let deferred = new Promise<void>((resolve, reject) => {            
-            var id = ObjectID(id);
-            self.eventCollection.findOneAndModify({ _id: id }, [['_id','asc']], { $set: { isProcessed: true } }, {}, 
+        let deferred = new Promise<void>((resolve, reject) => {
+            self.eventCollection.findOneAndUpdate({ _id: ObjectID(id) },{ $set: { isProcessed: true } }, { returnOriginal:true }, 
             (err, r) => {
                 if (err)
                     reject(err);
@@ -182,8 +181,7 @@ export class MongoDBPersistence implements IPersistenceProvider {
     public async markEventUnprocessed(id: string): Promise<void> {
         var self = this;
         let deferred = new Promise<void>((resolve, reject) => {            
-            var id = ObjectID(id);
-            self.eventCollection.findOneAndModify({ _id: id }, [['_id','asc']], { $set: { isProcessed: false } }, {}, 
+            self.eventCollection.findOneAndUpdate({ _id: ObjectID(id) }, { $set: { isProcessed: false } }, { returnOriginal:true }, 
             (err, r) => {
                 if (err)
                     reject(err);
