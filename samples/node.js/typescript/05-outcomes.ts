@@ -16,11 +16,11 @@ class OutcomeSample_Workflow implements WorkflowBase<MyDataClass> {
             .startWith(SelectOutcome)
                 .name("Determine Future")
                 .input((step, data) => step.myValue = data.myValue)
-                .when(0)
+                .when((data) => 0)
                     .then(TaskA)
                     .then(TaskB)
                 .end<SelectOutcome>("Determine Future")
-                .when(1)
+                .when((data) => 1)
                     .then(TaskC)
                     .then(TaskD)
                 .end<SelectOutcome>("Determine Future");
