@@ -1,6 +1,6 @@
 import { StepBody, InlineStepBody } from "../abstractions";
 import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, WorkflowErrorHandling } from "../models";
-import { SubscriptionStep, SubscriptionStepBody, Foreach, While, If } from "../primitives";
+import { SubscriptionStep, SubscriptionStepBody, Foreach, While, If, Delay, Schedule } from "../primitives";
 
 export class WorkflowBuilder<TData> {
     
@@ -209,6 +209,36 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         this.workflowBuilder.addStep(newStep);
         
         let stepBuilder = new StepBuilder<If, TData>(this.workflowBuilder, newStep);
+
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+
+        return stepBuilder;
+    }
+
+    public schedule(interval: (data :TData) => number): StepBuilder<Schedule, TData> {
+        let newStep = new WorkflowStep<Schedule>();
+        newStep.body = Schedule;
+        newStep.inputs.push((step: Schedule, data: any) => step.interval = interval(data));
+        this.workflowBuilder.addStep(newStep);
+        
+        let stepBuilder = new StepBuilder<Schedule, TData>(this.workflowBuilder, newStep);
+
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+
+        return stepBuilder;
+    }
+
+    public delay(milliseconds: (data :TData) => number): StepBuilder<Delay, TData> {
+        let newStep = new WorkflowStep<Delay>();
+        newStep.body = Delay;
+        newStep.inputs.push((step: Delay, data: any) => step.milliseconds = milliseconds(data));
+        this.workflowBuilder.addStep(newStep);
+        
+        let stepBuilder = new StepBuilder<Delay, TData>(this.workflowBuilder, newStep);
 
         let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
