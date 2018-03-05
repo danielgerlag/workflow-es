@@ -38,7 +38,7 @@ export class WorkflowStep<T extends StepBody> extends WorkflowStepBase {
     
     public body: { new(): T; };
     
-    public inputs: Array<(step: T, data: any) => void> = [];
-    public outputs: Array<(step: T, data: any) => void> = [];
+    public inputs: Array<(step: StepBody, data: any) => void> = [];
+    public outputs: Array<(step: StepBody, data: any) => void> = [];
     
 }
