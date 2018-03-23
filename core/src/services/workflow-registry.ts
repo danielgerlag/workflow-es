@@ -3,14 +3,13 @@ import { WorkflowDefinition } from "../models"
 import { WorkflowBase, IWorkflowRegistry } from "../abstractions"
 import { WorkflowBuilder } from "./workflow-builder";
 
-var _ = require("underscore");
 var wfes_registry: Array<RegistryEntry> = [];
 
 @injectable()
 export class WorkflowRegistry implements IWorkflowRegistry {
     
     public getDefinition(id: string, version: number) : WorkflowDefinition {
-        let item = _.findWhere(wfes_registry, { id: id, version: version });
+        let item = wfes_registry.find(x => x.id == id && x.version == version);
         if (!item)
             throw "Workflow not registered";
              

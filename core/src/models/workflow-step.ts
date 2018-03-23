@@ -18,8 +18,8 @@ export abstract class WorkflowStepBase {
     public errorBehavior : number;
     public retryInterval : number;
 
-    public inputs: Array<(step: StepBody, data: any) => void>;
-    public outputs: Array<(step: StepBody, data: any) => void>;
+    public inputs: Array<(step: StepBody, data: any) => void> = [];
+    public outputs: Array<(step: StepBody, data: any) => void> = [];
 
     public initForExecution(executorResult: WorkflowExecutorResult, definition: WorkflowDefinition, workflow: WorkflowInstance, executionPointer: ExecutionPointer): any {
         return ExecutionPipelineDirective.Next;
@@ -37,8 +37,5 @@ export abstract class WorkflowStepBase {
 export class WorkflowStep<T extends StepBody> extends WorkflowStepBase {
     
     public body: { new(): T; };
-    
-    public inputs: Array<(step: T, data: any) => void> = [];
-    public outputs: Array<(step: T, data: any) => void> = [];
     
 }

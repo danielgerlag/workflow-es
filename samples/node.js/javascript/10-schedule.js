@@ -39,7 +39,7 @@ class Schedule_Workflow {
     build(builder) {
         builder
             .startWith(SayHello)
-            .schedule((data) => 2000).do((then) => then
+            .schedule((data) => 20000).do((then) => then
                 .startWith(PrintMessage)
                     .input((step, data) => step.message = "firing")
                 .then(DoSomething))            

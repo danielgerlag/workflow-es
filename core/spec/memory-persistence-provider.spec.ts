@@ -4,14 +4,14 @@ import { MemoryPersistenceProvider } from "../src/services/memory-persistence-pr
 
 describe("memory-persistence-provider", () => {
     
-    var persistence: IPersistenceProvider = new MemoryPersistenceProvider();
-    var wf1: WorkflowInstance;    
+    let persistence: IPersistenceProvider = new MemoryPersistenceProvider();
+    let wf1: WorkflowInstance;    
 
     beforeEach(() => {        
     });
 
     describe("createNewWorkflow", () => { 
-        var returnedId: string;
+        let returnedId: string;
         
         beforeEach((done) => {
             wf1 = new WorkflowInstance();
@@ -33,7 +33,7 @@ describe("memory-persistence-provider", () => {
     });
 
     describe("getWorkflowInstance", () => {
-        var wf2: WorkflowInstance;
+        let wf2: WorkflowInstance;
         beforeEach((done) => {            
             persistence.getWorkflowInstance(wf1.id)
                 .then(wf => {                    
@@ -49,7 +49,7 @@ describe("memory-persistence-provider", () => {
     });
 
     describe("persistWorkflow", () => {
-        var modified: WorkflowInstance;
+        let modified: WorkflowInstance;
         
         beforeEach((done) => {    
             modified = JSON.parse(JSON.stringify(wf1));

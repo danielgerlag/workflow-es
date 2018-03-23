@@ -1,7 +1,7 @@
 import { configureWorkflow, WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, ConsoleLogger } from "../../src";
 import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 
- var basicWorkflowScope = {
+let basicWorkflowScope = {
      step1Ticker: 0,    
      step2Ticker: 0
  }
@@ -33,14 +33,14 @@ import { MemoryPersistenceProvider } from "../../src/services/memory-persistence
          }
      }
 
-     var workflowId = null;
-     var instance = null;
+     let workflowId = null;
+     let instance = null;
      
-     var persistence = new MemoryPersistenceProvider();
-     var config = configureWorkflow();
+     let persistence = new MemoryPersistenceProvider();
+     let config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
-     var host = config.getHost();
+     let host = config.getHost();
 
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
@@ -51,8 +51,8 @@ import { MemoryPersistenceProvider } from "../../src/services/memory-persistence
                  host.startWorkflow("basic-workflow", 1, null)
                      .then(id => {                        
                          workflowId = id;
-                         var counter = 0;
-                         var callback = () => {
+                         let counter = 0;
+                         let callback = () => {
                              persistence.getWorkflowInstance(workflowId)
                                  .then(result => {
                                      instance = result;

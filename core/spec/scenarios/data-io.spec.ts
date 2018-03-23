@@ -33,13 +33,13 @@
          }
      }
 
-     var workflowId = null;
-     var instance = null;
-     var persistence = new MemoryPersistenceProvider();
-     var config = configureWorkflow();
+     let workflowId = null;
+     let instance = null;
+     let persistence = new MemoryPersistenceProvider();
+     let config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
-     var host = config.getHost();
+     let host = config.getHost();
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
      beforeAll((done) => {
@@ -49,8 +49,8 @@
                  host.startWorkflow("data-workflow", 1, { value1: 2, value2: 3 })
                      .then(id => {                        
                          workflowId = id;
-                         var counter = 0;
-                         var callback = () => {
+                         let counter = 0;
+                         let callback = () => {
                              persistence.getWorkflowInstance(workflowId)
                                  .then(result => {
                                      instance = result;

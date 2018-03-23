@@ -1,8 +1,7 @@
  import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "../../src";
  import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 
-
- var outcomeForkScope = {
+ let outcomeForkScope = {
      taskATicker: 0,    
      taskBTicker: 0,
      taskCTicker: 0
@@ -46,13 +45,13 @@
          }
      }
 
-     var workflowId = null;
-     var instance = null;
-     var persistence = new MemoryPersistenceProvider();
-     var config = configureWorkflow();
+     let workflowId = null;
+     let instance = null;
+     let persistence = new MemoryPersistenceProvider();
+     let config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
-     var host = config.getHost();
+     let host = config.getHost();
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
      beforeAll((done) => {
@@ -62,8 +61,8 @@
                  host.startWorkflow("outcome-workflow", 1, null)
                      .then(id => {                        
                          workflowId = id;
-                         var counter = 0;
-                         var callback = () => {
+                         let counter = 0;
+                         let callback = () => {
                              persistence.getWorkflowInstance(workflowId)
                                  .then(result => {
                                      instance = result;

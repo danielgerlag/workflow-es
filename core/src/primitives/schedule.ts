@@ -24,7 +24,7 @@ export class Schedule extends ContainerStepBody {
         let complete: boolean = true;
 
         for (let childId of context.pointer.children)
-                complete = complete && this.isBranchComplete(context.workflow.executionPointers, childId);
+            complete = complete && this.isBranchComplete(context.workflow.executionPointers, childId);
 
         if (complete)
             return ExecutionResult.next();
