@@ -1,4 +1,3 @@
-export * from "./services/workflow-builder";
 export * from "./services/workflow-host";
 export * from "./services/single-node-lock-provider";
 export * from "./services/single-node-queue-provider";

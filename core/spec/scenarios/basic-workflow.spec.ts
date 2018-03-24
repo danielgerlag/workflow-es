@@ -1,5 +1,6 @@
 import { configureWorkflow, WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, ConsoleLogger } from "../../src";
 import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
+import { spinWaitCallback } from "../helpers/spin-wait";
 
 let basicWorkflowScope = {
      step1Ticker: 0,    
@@ -44,31 +45,14 @@ let basicWorkflowScope = {
 
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
-     beforeAll((done) => {
-         host.registerWorkflow(Basic_Workflow);
-         host.start()
-             .then(() => {                
-                 host.startWorkflow("basic-workflow", 1, null)
-                     .then(id => {                        
-                         workflowId = id;
-                         let counter = 0;
-                         let callback = () => {
-                             persistence.getWorkflowInstance(workflowId)
-                                 .then(result => {
-                                     instance = result;
-                                     if ((instance.status == WorkflowStatus.Runnable) && (counter < 60)) {
-                                         counter++;
-                                         setTimeout(callback, 500);
-                                     }
-                                     else {
-                                         done();
-                                     }
-                                 })
-                                 .catch(done.fail);                            
-                         };
-                         setTimeout(callback, 500);                        
-                     });
-             });         
+     beforeAll(async (done) => {
+        host.registerWorkflow(Basic_Workflow);
+        await host.start();
+        workflowId = await host.startWorkflow("basic-workflow", 1, null);
+        spinWaitCallback(async () => {
+            instance = await persistence.getWorkflowInstance(workflowId);
+            return  (instance.status != WorkflowStatus.Runnable);
+        }, done);
      });
 
      afterAll(() => {

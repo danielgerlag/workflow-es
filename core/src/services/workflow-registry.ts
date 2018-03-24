@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { WorkflowDefinition } from "../models"
 import { WorkflowBase, IWorkflowRegistry } from "../abstractions"
-import { WorkflowBuilder } from "./workflow-builder";
+import { WorkflowBuilder } from "../fluent-builders";
 
 var wfes_registry: Array<RegistryEntry> = [];
 
