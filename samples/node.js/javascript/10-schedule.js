@@ -42,7 +42,7 @@ class Schedule_Workflow {
             .schedule((data) => 20000).do((then) => then
                 .startWith(PrintMessage)
                     .input((step, data) => step.message = "firing")
-                .then(DoSomething))            
+                .then(DoSomething))
             .then(SayGoodbye);
     }
 }
