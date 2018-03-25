@@ -42,4 +42,9 @@ export class WorkflowBuilder<TData> {
     public getUpstreamSteps(id: number): Array<WorkflowStepBase> {
         return this.steps.filter(step => step.outcomes.filter(outcome => outcome.nextStep == id).length > 0);
     }
+
+    public lastStep(): number {
+        let last = this.steps.reduce((prev, current) => prev.id > current.id ? prev : current);
+        return last.id;
+    }
 }

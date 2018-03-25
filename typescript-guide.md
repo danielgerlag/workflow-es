@@ -244,6 +244,36 @@ build(builder) {
 }
 ```
 
+#### Parallel Sequences
+
+Run several sequences of steps in parallel
+
+```javascript
+class Parallel_Workflow {
+    
+    build(builder) {
+        builder
+        .startWith(SayHello)
+        .parallel()
+            .do(branch1 => branch1
+                .startWith(DoSomething)
+                .then(WaitForSomething)
+                .then(DoSomethingElse)
+            )
+            .do(branch2 => branch2
+                .startWith(DoSomething)
+                .then(DoSomethingElse)
+            )
+            .do(branch3 => branch3
+                .startWith(DoSomething)
+                .then(DoSomethingElse)
+            )
+        .join()
+        .then(SayGoodbye);
+    }
+}
+```
+
 ### Host
 
 The workflow host is the service responsible for executing workflows.  It does this by polling the persistence provider for workflow instances that are ready to run, executes them and then passes them back to the persistence provider to by stored for the next time they are run.  It is also responsible for publishing events to any workflows that may be waiting on one.
