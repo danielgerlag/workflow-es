@@ -5,6 +5,9 @@ export class ExecutionResult {
     public persistenceData: any;    
     public sleep: Date;
     public branchValues: any[] = [];
+    public eventName: string;
+    public eventKey: string;
+    public eventAsOf: Date;
 
     static outcome(value: any): Promise<ExecutionResult> {
         var result = new ExecutionResult();
@@ -40,6 +43,15 @@ export class ExecutionResult {
         result.proceed = false;
         result.persistenceData = persistenceData;
         result.branchValues = branches;
+        return Promise.resolve(result);
+    }
+
+    static waitForEvent(eventName: string, eventKey: string, effectiveDate: Date): Promise<ExecutionResult> {
+        var result = new ExecutionResult();        
+        result.proceed = false;
+        result.eventName = eventName;
+        result.eventKey = eventKey;
+        result.eventAsOf = effectiveDate;
         return Promise.resolve(result);
     }
 }

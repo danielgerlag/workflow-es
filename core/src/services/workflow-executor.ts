@@ -1,15 +1,16 @@
 import { injectable, inject } from "inversify";
-import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES } from "../abstractions";
+import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES, IExecutionResultProcessor } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
 import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
- 
-var _ = require("underscore");
 
 @injectable()
 export class WorkflowExecutor implements IWorkflowExecutor {
 
     @inject(TYPES.IWorkflowRegistry)
     private registry : IWorkflowRegistry;
+
+    @inject(TYPES.IExecutionResultProcessor)
+    private resultProcessor : IExecutionResultProcessor;
 
     @inject(TYPES.ILogger)
     private logger : ILogger;
@@ -19,15 +20,17 @@ export class WorkflowExecutor implements IWorkflowExecutor {
 
         let result: WorkflowExecutorResult = new WorkflowExecutorResult();
         
-        self.logger.log("Execute workflow: " + instance.id);
-        let exePointers: Array<ExecutionPointer> = _.where(instance.executionPointers, { active: true });
+        self.logger.log("Execute workflow: " + instance.id);                
+
+        let exePointers: Array<ExecutionPointer> = instance.executionPointers.filter(x => x.active);
+
         let def = self.registry.getDefinition(instance.workflowDefinitionId, instance.version);
         if (!def) {
             throw "No workflow definition in registry for " + instance.workflowDefinitionId + ":" + instance.version;
         }
 
         for (let pointer of exePointers) {
-            let step: WorkflowStepBase = _.findWhere(def.steps, { id: pointer.stepId });
+            let step: WorkflowStepBase = def.steps.find(x => x.id == pointer.stepId);
             if (step) {
                 try {
                     
@@ -75,7 +78,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                         output(body, instance.data);
                     }
 
-                    this.processExecutionResult(stepResult, pointer, instance, step);
+                    this.resultProcessor.processExecutionResult(stepResult, pointer, instance, step, result);
                 }
                 catch (err) {
                     self.logger.error("Error executing workflow %s on step %s - %o", instance.id, pointer.stepId, err);
@@ -111,44 +114,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
         self.determineNextExecutionTime(instance);        
         return result;
     }
-
-    processExecutionResult(stepResult: ExecutionResult, pointer: ExecutionPointer, instance: WorkflowInstance, step: WorkflowStepBase) {
-
-        pointer.persistenceData = stepResult.persistenceData;
-        pointer.outcome = stepResult.outcomeValue;
-        if (stepResult.sleep)
-            pointer.sleepUntil = stepResult.sleep.getTime();
-
-        if (stepResult.proceed) {
-            pointer.active = false;
-            pointer.endTime = new Date();
-            
-            for (let outcome of step.outcomes.filter(x => (x.value(instance.data) == stepResult.outcomeValue) || (x.value(instance.data) == null))) {
-                let newPointer = new ExecutionPointer();
-                newPointer.active = true;
-                newPointer.predecessorId = pointer.id;
-                newPointer.stepId = outcome.nextStep;
-                newPointer.id = (Math.random() * 0x10000000000000).toString(16);
-                newPointer.contextItem = pointer.contextItem;
-                instance.executionPointers.push(newPointer);
-            }
-        }
-        else {
-            for (let branch of stepResult.branchValues) {
-                for (let childDefId of step.children) {                    
-                    let childPointer = new ExecutionPointer();
-                    childPointer.id = (Math.random() * 0x10000000000000).toString(16);
-                    childPointer.predecessorId = pointer.id;
-                    childPointer.stepId = childDefId;
-                    childPointer.active = true;
-                    childPointer.contextItem = branch;
-
-                    instance.executionPointers.push(childPointer);
-                    pointer.children.push(childPointer.id);
-                }
-            }
-        }
-    }
+    
 
     determineNextExecutionTime(instance: WorkflowInstance) {
         instance.nextExecution = null;

@@ -1,5 +1,6 @@
- import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "../../src";
- import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
+import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "../../src";
+import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
+import { spinWaitCallback } from "../helpers/spin-wait";
 
  describe("data io", () => {
 
@@ -33,44 +34,27 @@
          }
      }
 
-     var workflowId = null;
-     var instance = null;
-     var persistence = new MemoryPersistenceProvider();
-     var config = configureWorkflow();
+     let workflowId = null;
+     let instance = null;
+     let persistence = new MemoryPersistenceProvider();
+     let config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
-     var host = config.getHost();
+     let host = config.getHost();
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
-     beforeAll((done) => {
-         host.registerWorkflow(Data_Workflow);
-         host.start()
-             .then(() => {
-                 host.startWorkflow("data-workflow", 1, { value1: 2, value2: 3 })
-                     .then(id => {                        
-                         workflowId = id;
-                         var counter = 0;
-                         var callback = () => {
-                             persistence.getWorkflowInstance(workflowId)
-                                 .then(result => {
-                                     instance = result;
-                                     if ((instance.status == WorkflowStatus.Runnable) && (counter < 60)) {
-                                         counter++;
-                                         setTimeout(callback, 500);
-                                     }
-                                     else {
-                                         done();
-                                     }
-                                 })
-                                 .catch(done.fail);                            
-                         };
-                         setTimeout(callback, 500);                        
-                     });
-             });         
+     beforeAll(async (done) => {
+        host.registerWorkflow(Data_Workflow);
+        await host.start();
+        workflowId = await host.startWorkflow("data-workflow", 1, { value1: 2, value2: 3 });
+        spinWaitCallback(async () => {
+            instance = await persistence.getWorkflowInstance(workflowId);
+            return  (instance.status != WorkflowStatus.Runnable);
+        }, done);
      });
 
      afterAll(() => {
-         host.stop();        
+         host.stop();
      });
     
      it("should be marked as complete", function() {

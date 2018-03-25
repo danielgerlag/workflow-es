@@ -10,3 +10,5 @@ export * from "./abstractions/workflow-registry";
 export * from "./abstractions/logger";
 export * from "./abstractions/background-worker";
 export * from "./abstractions/types";
+export * from "./abstractions/execution-result-processor";
+export * from "./abstractions/execution-pointer-factory";

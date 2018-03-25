@@ -13,3 +13,4 @@ export * from "./models/workflow-error-handling";
 export * from "./models/execution-pipeline-directive";
 export * from "./models/workflow-executor-result";
 export * from "./models/container-data";
+export * from "./models/schedule-persistence-data";

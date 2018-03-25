@@ -216,6 +216,34 @@ class If_Workflow implements WorkflowBase<MyDataClass> {
 }
 ```
 
+#### Delay
+
+Put the workflow to sleep for a specifed number of milliseconds.
+
+```javascript
+build(builder) {
+    builder
+        .startWith(HelloWorld)
+        .delay(data => 2000)
+        .then(GoodbyeWorld);
+}
+```
+
+#### Schedule
+
+Schedule a sequence of steps to execution asynchronously in the future.
+
+```javascript
+build(builder) {
+    builder
+        .startWith(HelloWorld)
+        .schedule((data) => 20000).do((sequence) => sequence
+            .startWith(DoSomething)
+            .then(DoSomethingElse))            
+        .then(ContinueWithSomething);
+}
+```
+
 ### Host
 
 The workflow host is the service responsible for executing workflows.  It does this by polling the persistence provider for workflow instances that are ready to run, executes them and then passes them back to the persistence provider to by stored for the next time they are run.  It is also responsible for publishing events to any workflows that may be waiting on one.

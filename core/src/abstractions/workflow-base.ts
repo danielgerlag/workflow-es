@@ -1,4 +1,4 @@
-import { WorkflowBuilder } from "../services";
+import { WorkflowBuilder } from "../fluent-builders";
 
 export abstract class WorkflowBase<TData> {
     public abstract id: string;

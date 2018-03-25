@@ -16,21 +16,17 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
         return instance.id;
     }
     
-    public async persistWorkflow(instance: WorkflowInstance): Promise<void> {
-        let _ = require("underscore");
-        let existing = _.findWhere(wfes_instances, { id: instance.id });
-        let idx = wfes_instances.indexOf(existing)
+    public async persistWorkflow(instance: WorkflowInstance): Promise<void> {        
+        let idx = wfes_instances.findIndex(x => x.id == instance.id);
         wfes_instances[idx] = instance;
     }
 
     public async getWorkflowInstance(workflowId: string): Promise<WorkflowInstance> {
-        let _ = require("underscore");
-        let existing = _.findWhere(wfes_instances, { id: workflowId });
+        let existing = wfes_instances.find(x => x.id == workflowId);
         return existing;
     }
 
-    public async getRunnableInstances(): Promise<Array<string>> {
-        let _ = require("underscore");
+    public async getRunnableInstances(): Promise<Array<string>> {        
         let runnables: Array<WorkflowInstance> = wfes_instances.filter(x => x.status == WorkflowStatus.Runnable && x.nextExecution < Date.now());
         let result: Array<string> = [];
         for (let item of runnables) {

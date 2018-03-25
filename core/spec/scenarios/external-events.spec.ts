@@ -1,5 +1,6 @@
- import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "../../src";
- import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
+import { WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, configureWorkflow, ConsoleLogger } from "../../src";
+import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
+import { spinWaitCallback, spinWait } from "../helpers/spin-wait";
 
  describe("external events", () => {
 
@@ -25,55 +26,32 @@
          }
      }
 
-     var workflowId = null;
-     var instance = null;
-     var persistence = new MemoryPersistenceProvider();
-     var config = configureWorkflow();
+     let workflowId = null;
+     let instance = null;
+     let persistence = new MemoryPersistenceProvider();
+     let config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
-     var host = config.getHost();
+     let host = config.getHost();
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
-     beforeAll((done) => {
-         host.registerWorkflow(Event_Workflow);
-         host.start()
-             .then(() => {
-                 host.startWorkflow("event-workflow", 1, { value1: 2, value2: 3 })
-                     .then(id => {                        
-                         workflowId = id;
-                         var counter1 = 0;
-                        
-                         var callback1 = () => {
-                             persistence.getSubscriptions("my-event", "0", new Date())
-                                 .then(subs => {
-                                     if ((subs.length == 0) && (counter1 < 60))
-                                         setTimeout(callback1, 500);
-                                     else
-                                         host.publishEvent("my-event", "0", "Pass", new Date());
-                                     counter1++;
-                                 })
-                                 .catch(done.fail);
-                         };                        
-                        
-                         var counter2 = 0;
-                         var callback2 = () => {
-                             persistence.getWorkflowInstance(workflowId)
-                                 .then(result => {
-                                     instance = result;
-                                     if ((instance.status == WorkflowStatus.Runnable) && (counter2 < 60)) {
-                                         counter2++;
-                                         setTimeout(callback2, 500);
-                                     }
-                                     else {
-                                         done();
-                                     }
-                                 })
-                                 .catch(done.fail);                            
-                         };
-                         setTimeout(callback1, 500);
-                         setTimeout(callback2, 1000);                        
-                     });
-             });         
+     beforeAll(async (done) => {
+        host.registerWorkflow(Event_Workflow);
+        await host.start();
+
+        workflowId = await host.startWorkflow("event-workflow", 1, { value1: 2, value2: 3 });
+
+        await spinWait(async () => {
+            let subs = await persistence.getSubscriptions("my-event", "0", new Date());
+            return (subs.length > 0);
+        });
+
+        await host.publishEvent("my-event", "0", "Pass", new Date());
+                         
+        spinWaitCallback(async () => {
+            instance = await persistence.getWorkflowInstance(workflowId);
+            return  (instance.status != WorkflowStatus.Runnable);
+        }, done);
      });
 
      afterAll(() => {

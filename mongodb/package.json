@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-mongodb",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "MongoDB provider for Workflow ES",
   "main": "./build/src/index.js",
   "typings": "./build/src/index.d.ts",
@@ -31,7 +31,7 @@
     "json-stable-stringify": "^1.0.1",
     "mongodb": "^2.2.11",
     "reflect-metadata": "^0.1.10",
-    "workflow-es": "^2.0.2"
+    "workflow-es": "^2.1.0"
   },
   "repository": {
     "type": "git",

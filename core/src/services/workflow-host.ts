@@ -1,6 +1,6 @@
 import { injectable, inject, multiInject } from "inversify";
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, Event } from "../models";
-import { WorkflowBase, IWorkflowRegistry, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger } from "../abstractions";
+import { WorkflowBase, IWorkflowRegistry, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger, IExecutionPointerFactory } from "../abstractions";
 import { WorkflowQueueWorker } from "./workflow-queue-worker";
 
 import { MemoryPersistenceProvider } from "./memory-persistence-provider";
@@ -25,6 +25,9 @@ export class WorkflowHost implements IWorkflowHost {
     
     @inject(TYPES.IQueueProvider)
     private queueProvider:  IQueueProvider = new SingleNodeQueueProvider();
+
+    @inject(TYPES.IExecutionPointerFactory)
+    private pointerFactory : IExecutionPointerFactory;
 
     @inject(TYPES.ILogger)
     private logger: ILogger;
@@ -58,10 +61,7 @@ export class WorkflowHost implements IWorkflowHost {
         wf.createTime = new Date();
         wf.status = WorkflowStatus.Runnable;
         
-        let ep = new ExecutionPointer();
-        ep.active = true;
-        ep.stepId = 0;
-        ep.id = (Math.random() * 0x10000000000000).toString(16);
+        let ep = this.pointerFactory.buildGenesisPointer(def);
         wf.executionPointers.push(ep);
         
         let workflowId = await self.persistence.createNewWorkflow(wf);

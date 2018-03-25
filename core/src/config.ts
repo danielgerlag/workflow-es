@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Container, ContainerModule, interfaces, injectable, inject } from "inversify";
-import { TYPES, IWorkflowRegistry, IQueueProvider, IWorkflowHost, IPersistenceProvider, IDistributedLockProvider, IWorkflowExecutor, IBackgroundWorker, ILogger } from "./abstractions";
-import { SingleNodeQueueProvider, SingleNodeLockProvider, MemoryPersistenceProvider, WorkflowExecutor, WorkflowQueueWorker, EventQueueWorker, PollWorker, WorkflowRegistry, WorkflowHost, NullLogger, ConsoleLogger } from "./services";
+import { TYPES, IWorkflowRegistry, IQueueProvider, IWorkflowHost, IPersistenceProvider, IDistributedLockProvider, IWorkflowExecutor, IBackgroundWorker, IExecutionResultProcessor, IExecutionPointerFactory, ILogger } from "./abstractions";
+import { SingleNodeQueueProvider, SingleNodeLockProvider, MemoryPersistenceProvider, WorkflowExecutor, WorkflowQueueWorker, EventQueueWorker, PollWorker, WorkflowRegistry, WorkflowHost, ExecutionResultProcessor, ExecutionPointerFactory, NullLogger, ConsoleLogger } from "./services";
 
 export class WorkflowConfig {
     private container: Container;
@@ -43,6 +43,8 @@ export function configureWorkflow(): WorkflowConfig {
         bind<IDistributedLockProvider>(TYPES.IDistributedLockProvider).to(SingleNodeLockProvider).inSingletonScope();
         bind<IWorkflowRegistry>(TYPES.IWorkflowRegistry).to(WorkflowRegistry).inSingletonScope();
         bind<IWorkflowExecutor>(TYPES.IWorkflowExecutor).to(WorkflowExecutor);
+        bind<IExecutionResultProcessor>(TYPES.IExecutionResultProcessor).to(ExecutionResultProcessor);
+        bind<IExecutionPointerFactory>(TYPES.IExecutionPointerFactory).to(ExecutionPointerFactory);
 
         bind<IBackgroundWorker>(TYPES.IBackgroundWorker).to(WorkflowQueueWorker);
         bind<IBackgroundWorker>(TYPES.IBackgroundWorker).to(EventQueueWorker);        
