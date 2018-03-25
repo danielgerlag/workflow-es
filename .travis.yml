@@ -17,6 +17,7 @@ install:
   - cd providers/workflow-es-mongodb
   - npm install
   - cd ..
+  - cd ..
     
 script:
   - cd core
@@ -24,4 +25,5 @@ script:
   - cd ..
   - cd providers/workflow-es-mongodb
   - npm test
+  - cd ..
   - cd ..
