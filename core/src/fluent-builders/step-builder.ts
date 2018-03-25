@@ -1,9 +1,10 @@
 import { StepBody, InlineStepBody } from "../abstractions";
 import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, WorkflowErrorHandling } from "../models";
-import { WaitFor, Foreach, While, If, Delay, Schedule } from "../primitives";
+import { WaitFor, Foreach, While, If, Delay, Schedule, Sequence } from "../primitives";
 import { WorkflowBuilder } from "./workflow-builder";
 import { ReturnStepBuilder } from "./return-step-builder";
 import { OutcomeBuilder } from "./outcome-builder";
+import { ParallelStepBuilder } from "./parallel-step-builder";
 
 export class StepBuilder<TStepBody extends StepBody, TData> {
 
@@ -172,6 +173,19 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         
         let stepBuilder = new StepBuilder<If, TData>(this.workflowBuilder, newStep);
 
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+
+        return stepBuilder;
+    }
+
+    public parallel(): ParallelStepBuilder<TData, Sequence> {
+        var newStep = new WorkflowStep<Sequence>();
+        newStep.body = Sequence;
+        this.workflowBuilder.addStep(newStep);
+        var newBuilder = new StepBuilder<Sequence, TData>(this.workflowBuilder, newStep);
+        let stepBuilder = new ParallelStepBuilder<TData, Sequence>(this.workflowBuilder, newStep, newBuilder);
         let outcome = new StepOutcome();
         outcome.nextStep = newStep.id;
         this.step.outcomes.push(outcome);
