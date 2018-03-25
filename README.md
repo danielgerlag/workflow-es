@@ -25,7 +25,7 @@ Since workflows are typically long running processes, they will need to be persi
 There are several persistence providers available as seperate npm packages.
 
 * Memory Persistence Provider *(Default provider, for demo and testing purposes)*
-* [MongoDB](mongodb)
+* [MongoDB](https://github.com/danielgerlag/workflow-es/tree/master/providers/workflow-es-mongodb)
 * *(more to come soon...)*
 
 ### Multi-node clusters
