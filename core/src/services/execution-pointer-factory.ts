@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { IExecutionPointerFactory, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES, IExecutionResultProcessor } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
-import { WorkflowDefinition, ExecutionPointer, EventSubscription, StepOutcome, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
+import { WorkflowDefinition, ExecutionPointer, PointerStatus, EventSubscription, StepOutcome, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
 
 @injectable()
 export class ExecutionPointerFactory implements IExecutionPointerFactory {
@@ -10,6 +10,7 @@ export class ExecutionPointerFactory implements IExecutionPointerFactory {
         let result = new ExecutionPointer();
         result.active = true;
         result.stepId = 0;
+        result.status = PointerStatus.Pending;
         result.id = this.generatePointerId();
 
         return result;
@@ -19,9 +20,12 @@ export class ExecutionPointerFactory implements IExecutionPointerFactory {
         let result = new ExecutionPointer();
         result.active = true;
         result.stepId = outcomeTarget.nextStep;
+        result.status = PointerStatus.Pending;
         result.id = this.generatePointerId();
         result.predecessorId = pointer.id;
-        result.contextItem = pointer.contextItem;        
+        result.contextItem = pointer.contextItem;
+        if (pointer.scope)
+            result.scope = pointer.scope.slice();
 
         return result;
     }
@@ -31,10 +35,28 @@ export class ExecutionPointerFactory implements IExecutionPointerFactory {
         result.active = true;
         result.id = this.generatePointerId();
         result.predecessorId = pointer.id;
+        result.status = PointerStatus.Pending;
         result.stepId = childId;        
         result.contextItem = branch;
+        if (pointer.scope)
+            result.scope = pointer.scope.slice();
         
+        result.scope.push(pointer.id);
         pointer.children.push(result.id);
+        
+        return result;
+    }
+
+    public buildCompensationPointer(pointer: ExecutionPointer, exceptionPointer: ExecutionPointer, compensationStepId: number): ExecutionPointer {
+        let result = new ExecutionPointer();
+        result.active = true;
+        result.predecessorId = exceptionPointer.id;
+        result.stepId = compensationStepId,
+        result.status = PointerStatus.Pending;
+        result.id = this.generatePointerId();        
+        result.contextItem = pointer.contextItem;
+        if (pointer.scope)
+            result.scope = pointer.scope.slice();
 
         return result;
     }

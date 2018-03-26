@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES, IExecutionResultProcessor } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
-import { WorkflowInstance, ExecutionPointer, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
+import { WorkflowInstance, WorkflowDefinition, ExecutionPointer, PointerStatus, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
 
 @injectable()
 export class WorkflowExecutor implements IWorkflowExecutor {
@@ -16,15 +16,14 @@ export class WorkflowExecutor implements IWorkflowExecutor {
     private logger : ILogger;
     
     public async execute(instance: WorkflowInstance): Promise<WorkflowExecutorResult> {
-        let self = this;
 
         let result: WorkflowExecutorResult = new WorkflowExecutorResult();
         
-        self.logger.log("Execute workflow: " + instance.id);                
+        this.logger.log("Execute workflow: " + instance.id);                
 
         let exePointers: Array<ExecutionPointer> = instance.executionPointers.filter(x => x.active);
 
-        let def = self.registry.getDefinition(instance.workflowDefinitionId, instance.version);
+        let def = this.registry.getDefinition(instance.workflowDefinitionId, instance.version);
         if (!def) {
             throw "No workflow definition in registry for " + instance.workflowDefinitionId + ":" + instance.version;
         }
@@ -33,7 +32,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
             let step: WorkflowStepBase = def.steps.find(x => x.id == pointer.stepId);
             if (step) {
                 try {
-                    
+                    pointer.status = PointerStatus.Running;
                     switch (step.initForExecution(result, def, instance, pointer)) {
                         case ExecutionPipelineDirective.Defer:
                             continue;
@@ -81,40 +80,35 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                     this.resultProcessor.processExecutionResult(stepResult, pointer, instance, step, result);
                 }
                 catch (err) {
-                    self.logger.error("Error executing workflow %s on step %s - %o", instance.id, pointer.stepId, err);
-                    
-                    switch (step.errorBehavior) {
-                        case WorkflowErrorHandling.Retry:
-                            pointer.sleepUntil = (Date.now() + step.retryInterval);
-                            break;
-                        case WorkflowErrorHandling.Suspend:
-                            instance.status = WorkflowStatus.Suspended;
-                            break;
-                        case WorkflowErrorHandling.Terminate:
-                            instance.status = WorkflowStatus.Terminated;
-                            break;
-                        default:
-                            pointer.sleepUntil = (Date.now() + 60000);
-                            break;
-                    }
-
-                    pointer.retryCount++;
+                    this.logger.error("Error executing workflow %s on step %s - %o", instance.id, pointer.stepId, err);
                     let perr = new ExecutionError();
                     perr.message = err.message;
                     perr.errorTime = new Date();
                     result.errors.push(perr);
+
+                    this.resultProcessor.handleStepException(instance, def, pointer, step);
                 }
             }
             else {
-                self.logger.error("Could not find step on workflow %s %s", instance.id, pointer.stepId);
+                this.logger.error("Could not find step on workflow %s %s", instance.id, pointer.stepId);
                 pointer.sleepUntil = (Date.now() + 60000); //todo: make configurable
             }
         }
 
-        self.determineNextExecutionTime(instance);        
+        this.processAfterExecutionIteration(instance, def, result);
+        this.determineNextExecutionTime(instance);
         return result;
     }
-    
+
+    processAfterExecutionIteration(workflow: WorkflowInstance, defintion: WorkflowDefinition, workflowResult: WorkflowExecutorResult) {
+        let pointers = workflow.executionPointers.filter(x => !x.endTime);
+
+        for (let pointer of pointers) {
+            let step = defintion.steps.find(x => x.id == pointer.stepId);
+            if (step)
+                step.afterWorkflowIteration(workflowResult, defintion, workflow, pointer);
+        }
+    }
 
     determineNextExecutionTime(instance: WorkflowInstance) {
         instance.nextExecution = null;

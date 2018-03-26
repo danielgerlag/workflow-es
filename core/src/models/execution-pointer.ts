@@ -18,5 +18,17 @@ export class ExecutionPointer {
     public children: string[] = [];
     public contextItem: any;
     public predecessorId: string;
-    
+    public scope: string[] = [];
+    public status: number;    
+}
+
+export var PointerStatus = {
+    Legacy: 0,
+    Pending: 1,
+    Running: 2,
+    Complete: 3,
+    Sleeping: 4,
+    WaitingForEvent: 5,
+    Failed: 6,
+    Compensated: 7
 }
