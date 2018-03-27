@@ -1,5 +1,5 @@
 import { StepBody, InlineStepBody } from "../abstractions";
-import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, WorkflowErrorHandling } from "../models";
+import { WorkflowDefinition, WorkflowStepBase, WorkflowStep, StepOutcome, StepExecutionContext, ExecutionResult, WorkflowErrorHandling, SagaContainer } from "../models";
 import { WaitFor, Foreach, While, If, Delay, Schedule, Sequence } from "../primitives";
 import { WorkflowBuilder } from "./workflow-builder";
 import { ReturnStepBuilder } from "./return-step-builder";
@@ -193,6 +193,20 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         return stepBuilder;
     }
 
+    public saga(builder: (then: WorkflowBuilder<TData>) => void): StepBuilder<Sequence, TData> {
+        var newStep = new SagaContainer<Sequence>();
+        newStep.body = Sequence;
+        this.workflowBuilder.addStep(newStep);
+        let stepBuilder = new StepBuilder<Sequence, TData>(this.workflowBuilder, newStep);
+        let outcome = new StepOutcome();
+        outcome.nextStep = newStep.id;
+        this.step.outcomes.push(outcome);
+        builder(this.workflowBuilder);
+        stepBuilder.step.children.push(stepBuilder.step.id + 1); //TODO: make more elegant
+
+        return stepBuilder;
+    }
+
     public schedule(interval: (data :TData) => number): ReturnStepBuilder<TData, Schedule, TStepBody> {
         let newStep = new WorkflowStep<Schedule>();
         newStep.body = Schedule;
@@ -225,7 +239,7 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
 
     public do(builder: (then: WorkflowBuilder<TData>) => void): StepBuilder<TStepBody, TData> {
         builder(this.workflowBuilder);
-        this.step.children.push(this.step.id + 1); //TODO: make more elegant                        
+        this.step.children.push(this.step.id + 1); //TODO: make more elegant
 
         return this;
     }

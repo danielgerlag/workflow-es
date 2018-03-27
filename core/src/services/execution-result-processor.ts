@@ -3,6 +3,7 @@ import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TY
 import { WorkflowHost } from "./workflow-host";
 import { WorkflowInstance, ExecutionPointer, PointerStatus, ExecutionResult, WorkflowDefinition, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult, EventSubscription } from "../models";
 import { worker } from "cluster";
+import { isNullOrUndefined } from "util";
 
 @injectable()
 export class ExecutionResultProcessor implements IExecutionResultProcessor {
@@ -71,7 +72,7 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
         this.selectErrorStrategy(errorOption, workflow, definition, pointer, step);
     }
 
-    selectErrorStrategy(errorOption: number, workflow: WorkflowInstance, definition: WorkflowDefinition, pointer: ExecutionPointer, step: WorkflowStepBase) {
+    private selectErrorStrategy(errorOption: number, workflow: WorkflowInstance, definition: WorkflowDefinition, pointer: ExecutionPointer, step: WorkflowStepBase) {
         
         switch (errorOption) {
             case WorkflowErrorHandling.Retry:
@@ -95,11 +96,69 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
         pointer.retryCount++;
     }
 
-    compensate(workflow: WorkflowInstance, definition: WorkflowDefinition, exceptionPointer: ExecutionPointer) {
-        //todo
+    private compensate(workflow: WorkflowInstance, definition: WorkflowDefinition, exceptionPointer: ExecutionPointer) {
+        let scope = [];
+        if (exceptionPointer.scope)
+            scope = exceptionPointer.scope.slice();
+        
+        scope.push(exceptionPointer.id);
+
+        exceptionPointer.active = false;
+        exceptionPointer.endTime = new Date();
+        exceptionPointer.status = PointerStatus.Failed;
+
+        while (scope.length > 0) {
+            let pointerId = scope.pop();
+            let pointer = workflow.executionPointers.find(x => x.id == pointerId);
+            let step = definition.steps.find(x => x.id == pointer.stepId);
+
+            let resume = true;
+            let revert = false;
+
+            if (scope.length > 0) {
+                let parentId = scope[scope.length - 1];
+                let parentPointer = workflow.executionPointers.find(x => x.id == parentId);
+                let parentStep = definition.steps.find(x => x.id == parentPointer.stepId);
+                resume = parentStep.resumeChildrenAfterCompensation();
+                revert = parentStep.revertChildrenAfterCompensation();
+            }
+
+            let errorBehavior = this.isNull(step.errorBehavior, WorkflowErrorHandling.Compensate);
+            
+            if (errorBehavior != WorkflowErrorHandling.Compensate) {
+                this.selectErrorStrategy(this.isNull(step.errorBehavior, WorkflowErrorHandling.Retry), workflow, definition, pointer, step);
+                continue;
+            }
+
+            if (!isNullOrUndefined(step.compensationStepId)) {
+                pointer.active = false;
+                pointer.endTime = new Date();
+                pointer.status = PointerStatus.Compensated;
+
+                let compensationPointer = this.pointerFactory.buildCompensationPointer(pointer, exceptionPointer, step.compensationStepId);
+                workflow.executionPointers.push(compensationPointer);
+                
+                if (resume) {
+                    for (let outcomeTarget of step.outcomes.filter(x => isNullOrUndefined(x.value)))
+                        workflow.executionPointers.push(this.pointerFactory.buildNextPointer(pointer, outcomeTarget));
+                }
+            }
+
+            if (revert) {
+                let prevSiblings = workflow.executionPointers.filter(x => JSON.stringify(pointer.scope) == JSON.stringify(x.scope) && x.id != pointer.id && x.status == PointerStatus.Complete);
+                for (let siblingPointer of prevSiblings) {
+                    let siblingStep = definition.steps.find(x => x.id == siblingPointer.stepId);
+                    if (!isNullOrUndefined(siblingStep.compensationStepId)) {
+                        var compensationPointer = this.pointerFactory.buildCompensationPointer(siblingPointer, exceptionPointer, siblingStep.compensationStepId);
+                        workflow.executionPointers.push(compensationPointer);
+                        siblingPointer.status = PointerStatus.Compensated;
+                    }
+                }
+            }
+        }
     }
 
-    findScopeCompensationStepId(workflow: WorkflowInstance, definition: WorkflowDefinition, currentPointer: ExecutionPointer): number {
+    private findScopeCompensationStepId(workflow: WorkflowInstance, definition: WorkflowDefinition, currentPointer: ExecutionPointer): number {
         let scope = [];
         if (currentPointer.scope)
             currentPointer.scope.slice();
@@ -118,4 +177,10 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
         return undefined;
     }
 
+    private isNull(obj: any, fallback: any): any {
+        if (isNullOrUndefined(obj))
+            return fallback;
+        return obj;
+    }
+ 
 }
