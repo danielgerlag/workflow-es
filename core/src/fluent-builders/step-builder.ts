@@ -237,6 +237,34 @@ export class StepBuilder<TStepBody extends StepBody, TData> {
         return stepBuilder;
     }
 
+    public compensateWith<TNewStepBody extends StepBody>(body: { new(): TNewStepBody; }, setup: (step: StepBuilder<TNewStepBody, TData>) => void = null): StepBuilder<TStepBody, TData> {
+        let newStep = new WorkflowStep<TNewStepBody>();
+        newStep.body = body;
+        this.workflowBuilder.addStep(newStep);
+        let stepBuilder = new StepBuilder<TNewStepBody, TData>(this.workflowBuilder, newStep);
+
+        //setup
+        if (setup) {
+            setup(stepBuilder);
+        }
+        
+        this.step.compensationStepId = newStep.id;
+                
+        return this;
+    }
+
+    public compensateWithSequence(sequence: (then: WorkflowBuilder<TData>) => void): StepBuilder<TStepBody, TData> {
+        let newStep = new WorkflowStep<Sequence>();
+        newStep.body = Sequence;
+        this.workflowBuilder.addStep(newStep);
+        let stepBuilder = new StepBuilder<Sequence, TData>(this.workflowBuilder, newStep);
+        this.step.compensationStepId = newStep.id;
+        sequence(this.workflowBuilder);
+        stepBuilder.step.children.push(stepBuilder.step.id + 1); //TODO: make more elegant
+
+        return this;
+    }
+
     public do(builder: (then: WorkflowBuilder<TData>) => void): StepBuilder<TStepBody, TData> {
         builder(this.workflowBuilder);
         this.step.children.push(this.step.id + 1); //TODO: make more elegant
