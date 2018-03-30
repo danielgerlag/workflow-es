@@ -139,7 +139,7 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
                 workflow.executionPointers.push(compensationPointer);
                 
                 if (resume) {
-                    for (let outcomeTarget of step.outcomes.filter(x => isNullOrUndefined(x.value)))
+                    for (let outcomeTarget of step.outcomes.filter(x => isNullOrUndefined(x.value(workflow.data))))
                         workflow.executionPointers.push(this.pointerFactory.buildNextPointer(pointer, outcomeTarget));
                 }
             }
@@ -161,7 +161,7 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
     private findScopeCompensationStepId(workflow: WorkflowInstance, definition: WorkflowDefinition, currentPointer: ExecutionPointer): number {
         let scope = [];
         if (currentPointer.scope)
-            currentPointer.scope.slice();
+            scope = currentPointer.scope.slice();
         
         scope.push(currentPointer.id);
 

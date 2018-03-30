@@ -274,6 +274,69 @@ class Parallel_Workflow {
 }
 ```
 
+### Saga Transactions
+
+#### Specifying compensation steps for each component of a saga transaction
+
+In this sample, if `Task2` throws an exception, then `UndoTask2` and `UndoTask1` will be triggered.
+
+```javascript
+builder
+    .startWith(SayHello)
+        .compensateWith(UndoHello)
+    .saga(saga => saga
+        .startWith(Task1)
+            .compensateWith(UndoTask1)
+        .then(Task2)
+            .compensateWith(UndoTask2)
+        .then(Task3)
+            .compensateWith(UndoTask3)
+    )
+    .then(SayGoodbye);
+```
+
+#### Retrying a failed transaction
+
+This particular example will retry the entire saga every 5 seconds
+
+```javascript
+builder
+    .startWith(SayHello)
+        .compensateWith(UndoHello)
+    .saga(saga => saga
+        .startWith(Task1)
+	    .compensateWith(UndoTask1)
+	.then(Task2)
+	    .compensateWith(UndoTask2)
+	.then(Task3)
+	    .compensateWith(UndoTask3)
+	)		
+	.onError(WorkflowErrorHandling.Retry, 5000)
+	.then(SayGoodbye);
+```
+
+#### Compensating the entire transaction
+
+You could also only specify a master compensation step, as follows
+
+```javascript
+builder
+	.startWith(SayHello)
+		.compensateWith(UndoHello)
+	.saga(saga => saga
+		.startWith(Task1)
+		.then(Task2)
+		.then(Task3)
+	)		
+    .compensateWithSequence(comp => comp
+        .startWith(UndoTask1)
+        .then(UndoTask2)
+	    .then(UndoTask3)
+    )
+	.then(SayGoodbye);
+```
+
+
 ### Host
 
 The workflow host is the service responsible for executing workflows.  It does this by polling the persistence provider for workflow instances that are ready to run, executes them and then passes them back to the persistence provider to by stored for the next time they are run.  It is also responsible for publishing events to any workflows that may be waiting on one.

@@ -270,6 +270,68 @@ class Parallel_Workflow {
 }
 ```
 
+### Saga Transactions
+
+#### Specifying compensation steps for each component of a saga transaction
+
+In this sample, if `Task2` throws an exception, then `UndoTask2` and `UndoTask1` will be triggered.
+
+```javascript
+builder
+    .startWith(SayHello)
+        .compensateWith(UndoHello)
+    .saga(saga => saga
+        .startWith(Task1)
+            .compensateWith(UndoTask1)
+        .then(Task2)
+            .compensateWith(UndoTask2)
+        .then(Task3)
+            .compensateWith(UndoTask3)
+    )
+    .then(SayGoodbye);
+```
+
+#### Retrying a failed transaction
+
+This particular example will retry the entire saga every 5 seconds
+
+```javascript
+builder
+    .startWith(SayHello)
+        .compensateWith(UndoHello)
+    .saga(saga => saga
+        .startWith(Task1)
+	    .compensateWith(UndoTask1)
+	.then(Task2)
+	    .compensateWith(UndoTask2)
+	.then(Task3)
+	    .compensateWith(UndoTask3)
+	)		
+	.onError(WorkflowErrorHandling.Retry, 5000)
+	.then(SayGoodbye);
+```
+
+#### Compensating the entire transaction
+
+You could also only specify a master compensation step, as follows
+
+```javascript
+builder
+	.startWith(SayHello)
+		.compensateWith(UndoHello)
+	.saga(saga => saga
+		.startWith(Task1)
+		.then(Task2)
+		.then(Task3)
+	)		
+    .compensateWithSequence(comp => comp
+        .startWith(UndoTask1)
+        .then(UndoTask2)
+	    .then(UndoTask3)
+    )
+	.then(SayGoodbye);
+```
+
 
 ### Host
 
@@ -308,6 +370,8 @@ console.log("Started workflow: " + id);
 * [While loop](samples/node.js/javascript/08-while.js)
 
 * [If condition](samples/node.js/javascript/09-if.js)
+
+* [Saga Trasactions & compensation steps](samples/node.js/javascript/12-saga.js)
 
 * [Scheduled task](samples/node.js/javascript/10-schedule.js)
 

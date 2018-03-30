@@ -1,6 +1,6 @@
 export var WorkflowErrorHandling = {
-    Retry : 0,
-    Suspend : 1,
-    Terminate : 2,
-    Compensate: 3
+    Retry : 1,
+    Suspend : 2,
+    Terminate : 3,
+    Compensate: 4
 }
