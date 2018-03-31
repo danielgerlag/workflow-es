@@ -16,7 +16,7 @@ export abstract class WorkflowStepBase {
     public outcomes: Array<StepOutcome> = [];
     public children: Array<number> = [];
     public errorBehavior : number;
-    public retryInterval : number;
+    public retryInterval : number = 60000;
     public compensationStepId : number;
 
     public inputs: Array<(step: StepBody, data: any) => void> = [];

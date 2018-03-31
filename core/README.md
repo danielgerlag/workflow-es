@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/danielgerlag/workflow-es.svg?branch=master)](https://travis-ci.org/danielgerlag/workflow-es)
 
-Workflow ES is a workflow / durable task library for Node.js (or modern browsers).  It supports pluggable persistence and concurrency providers to allow for multi-node clusters.
+Workflow ES is a workflow / saga library for Node.js (or modern browsers).  It supports pluggable persistence and concurrency providers to allow for multi-node clusters.
 
 ## Installing
 

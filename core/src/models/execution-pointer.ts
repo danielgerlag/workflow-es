@@ -14,12 +14,12 @@ export class ExecutionPointer {
     public eventData: any;
     public outcome: any;
     public stepName: string;
-    public retryCount: number;
+    public retryCount: number = 0;
     public children: string[] = [];
     public contextItem: any;
     public predecessorId: string;
     public scope: string[] = [];
-    public status: number;    
+    public status: number = 0;    
 }
 
 export var PointerStatus = {

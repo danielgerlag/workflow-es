@@ -10,7 +10,7 @@
     "test": "jasmine"
   },
   "keywords": [
-    "workflow"
+    "workflow", "saga"
   ],
   "author": {
     "email": "daniel@gerlag.ca",
