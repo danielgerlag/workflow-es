@@ -316,14 +316,14 @@ builder
         .compensateWith(UndoHello)
     .saga(saga => saga
         .startWith(Task1)
-	    .compensateWith(UndoTask1)
-	.then(Task2)
-	    .compensateWith(UndoTask2)
-	.then(Task3)
-	    .compensateWith(UndoTask3)
-	)		
-	.onError(WorkflowErrorHandling.Retry, 5000)
-	.then(SayGoodbye);
+            .compensateWith(UndoTask1)
+        .then(Task2)
+            .compensateWith(UndoTask2)
+        .then(Task3)
+            .compensateWith(UndoTask3)
+    )		
+    .onError(WorkflowErrorHandling.Retry, 5000)
+    .then(SayGoodbye);
 ```
 
 #### Compensating the entire transaction
@@ -332,19 +332,19 @@ You could also only specify a master compensation step, as follows
 
 ```javascript
 builder
-	.startWith(SayHello)
-		.compensateWith(UndoHello)
-	.saga(saga => saga
-		.startWith(Task1)
-		.then(Task2)
-		.then(Task3)
-	)		
+    .startWith(SayHello)
+        .compensateWith(UndoHello)
+    .saga(saga => saga
+        .startWith(Task1)
+        .then(Task2)
+        .then(Task3)
+    )		
     .compensateWithSequence(comp => comp
         .startWith(UndoTask1)
         .then(UndoTask2)
-	    .then(UndoTask3)
+        .then(UndoTask3)
     )
-	.then(SayGoodbye);
+    .then(SayGoodbye);
 ```
 
 
