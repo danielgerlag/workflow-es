@@ -337,19 +337,19 @@ You could also only specify a master compensation step, as follows
 
 ```javascript
 builder
-	.startWith(SayHello)
-		.compensateWith(UndoHello)
-	.saga(saga => saga
-		.startWith(Task1)
-		.then(Task2)
-		.then(Task3)
-	)		
+    .startWith(SayHello)
+        .compensateWith(UndoHello)
+    .saga(saga => saga
+        .startWith(Task1)
+        .then(Task2)
+        .then(Task3)
+    )		
     .compensateWithSequence(comp => comp
         .startWith(UndoTask1)
         .then(UndoTask2)
-	    .then(UndoTask3)
+        .then(UndoTask3)
     )
-	.then(SayGoodbye);
+    .then(SayGoodbye);
 ```
 
 
