@@ -1,6 +1,6 @@
-import { IPersistenceProvider } from "../src/abstractions";
-import { WorkflowInstance, ExecutionPointer } from "../src/models";
-import { MemoryPersistenceProvider } from "../src/services/memory-persistence-provider";
+import { IPersistenceProvider } from "../../src/abstractions";
+import { WorkflowInstance, ExecutionPointer } from "../../src/models";
+import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 
 describe("memory-persistence-provider", () => {
     
