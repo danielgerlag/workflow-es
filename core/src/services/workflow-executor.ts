@@ -1,4 +1,4 @@
-import { injectable, inject } from "inversify";
+import { injectable, inject, Container } from "inversify";
 import { IPersistenceProvider, ILogger, IWorkflowRegistry, IWorkflowExecutor, TYPES, IExecutionResultProcessor } from "../abstractions";
 import { WorkflowHost } from "./workflow-host";
 import { WorkflowInstance, WorkflowDefinition, ExecutionPointer, PointerStatus, ExecutionResult, StepExecutionContext, WorkflowStepBase, WorkflowStatus, ExecutionError, WorkflowErrorHandling, ExecutionPipelineDirective, WorkflowExecutorResult } from "../models";
@@ -14,6 +14,9 @@ export class WorkflowExecutor implements IWorkflowExecutor {
 
     @inject(TYPES.ILogger)
     private logger : ILogger;
+
+    @inject(Container)
+    private container : Container;
     
     public async execute(instance: WorkflowInstance): Promise<WorkflowExecutorResult> {
 
@@ -53,7 +56,7 @@ export class WorkflowExecutor implements IWorkflowExecutor {
                     stepContext.item = pointer.contextItem;
                     stepContext.pointer = pointer;
                     
-                    let body = new step.body(); //todo: di
+                    let body =  this.container.resolve(step.body);
 
                     //inputs
                     for (let input of step.inputs) {

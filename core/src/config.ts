@@ -55,6 +55,7 @@ export function configureWorkflow(): WorkflowConfig {
     });
 
     let container = new Container();
+    container.bind(Container).toConstantValue(container);
     container.load(workflowModule);
 
     let config = new WorkflowConfig(container);
