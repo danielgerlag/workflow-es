@@ -1,0 +1,40 @@
+{
+  "name": "workflow-es-mysql",
+  "version": "1.0.0",
+  "description": "MySQL provider for Workflow ES",
+  "main": ".build/src/index.js",
+  "typings": "./build/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",
+    "test": "jasmine",
+    "posttest": "docker kill workflow-es-tests && docker rm workflow-es-tests"
+  },
+  "keywords": [
+    "workflow",
+    "mysql"
+  ],
+  "author": {
+    "email": "c.ottobonijr@gmail.com",
+    "name": "Carlos Ottoboni"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jasmine": "^3.3.1",
+    "@types/node": "^10.12.12",
+    "jasmine": "^3.3.1",
+    "jasmine-core": "^3.3.0",
+    "typescript": "^3.2.1"
+  },
+  "dependencies": {
+    "mysql2": "^1.6.4",
+    "reflect-metadata": "^0.1.12",
+    "sequelize": "^4.41.2",
+    "sequelize-typescript": "^0.6.6",
+    "workflow-es": "^2.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgerlag/workflow-es.git"
+  }
+}
