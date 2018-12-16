@@ -1,9 +1,13 @@
-import { Table, Column, Model, Default, PrimaryKey } from 'sequelize-typescript';
+import { Table, Column, Model, Default, PrimaryKey, DataType } from 'sequelize-typescript';
 
-@Table
+@Table({
+    timestamps: false,
+    freezeTableName: true
+})
 export class ExecutionPointer extends Model<ExecutionPointer> {
 
-    @Column
+    @Default(DataType.UUIDV1)
+    @Column(DataType.UUID)
     @PrimaryKey
     id: string;
 
@@ -16,8 +20,13 @@ export class ExecutionPointer extends Model<ExecutionPointer> {
     @Column
     sleepUntil: number;
 
-    @Column
-    persistenceData: any; //Is this a BLOOB data?
+    @Column(DataType.TEXT)
+    get persistenceData(): any {
+        return JSON.parse(this.getDataValue('persistenceData'));
+    };
+    set persistenceData(data: any) {
+        this.setDataValue('persistenceData', data);
+    }
 
     @Column
     startTime: Date;
@@ -28,17 +37,32 @@ export class ExecutionPointer extends Model<ExecutionPointer> {
     @Column
     eventName: string;
 
-    @Column
-    eventKey: any; //Can I assume that this is a string once the eventKey in Event is a string?
+    @Column(DataType.TEXT)
+    get eventKey(): any {
+        return JSON.parse(this.getDataValue('eventKey'));
+    };
+    set eventKey(data: any) {
+        this.setDataValue('eventKey', data);
+    }
 
     @Column
     eventPublished: boolean;
 
-    @Column
-    eventData: any; //Is this a BLOOB data?
+    @Column(DataType.TEXT)
+    get eventData(): any {
+        return JSON.parse(this.getDataValue('eventData'));
+    };
+    set eventData(data: any) {
+        this.setDataValue('eventData', data);
+    }
 
-    @Column
-    outcome: any; //Is this a BLOOB data?
+    @Column(DataType.TEXT)
+    get outcome(): any {
+        return JSON.parse(this.getDataValue('outcome'));
+    };
+    set outcome(data: any) {
+        this.setDataValue('outcome', data);
+    }
 
     @Column
     stepName: string;
@@ -47,17 +71,32 @@ export class ExecutionPointer extends Model<ExecutionPointer> {
     @Default(0)
     retryCount: number;
 
-    @Column
-    children: string[] = []; //Do I need to define a Children type to handle this?
+    @Column(DataType.TEXT)
+    get children(): string[] {
+        return JSON.parse(this.getDataValue('children'));
+    };
+    set children(data: string[]) {
+        this.setDataValue('children', data);
+    }
 
-    @Column
-    contextItem: any; //Is this a BLOOB data?
+    @Column(DataType.TEXT)
+    get contextItem(): any {
+        return JSON.parse(this.getDataValue('contextItem'));
+    };
+    set contextItem(data: any) {
+        this.setDataValue('contextItem', data);
+    }
 
     @Column
     predecessorId: string;
-
-    @Column
-    scope: string[] = []; //Do I need to define a Scope type to handle this?
+    
+    @Column(DataType.TEXT)
+    get scope(): string[] {
+        return JSON.parse(this.getDataValue('scope'));
+    };
+    set scope(data: string[]) {
+        this.setDataValue('scope', data);
+    }
 
     @Column
     @Default(0)

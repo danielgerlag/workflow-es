@@ -6,7 +6,7 @@
   "typings": "./build/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "pretest": "docker pull mongo && docker run -p 27019:27017 --name workflow-es-tests -d mongo && npm run build",
+    "pretest": "docker pull mysql && docker run -p 3308:3306 --name workflow-es-tests -e MYSQL_ROOT_PASSWORD=test-password -d mysql && npm run build",
     "test": "jasmine",
     "posttest": "docker kill workflow-es-tests && docker rm workflow-es-tests"
   },

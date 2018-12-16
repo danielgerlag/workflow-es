@@ -1,4 +1,4 @@
-import {Sequelize} from 'sequelize-typescript';
+import { Sequelize } from 'sequelize-typescript';
 
 export const sequelize = new Sequelize({
   dialect: 'mysql',
@@ -6,5 +6,10 @@ export const sequelize = new Sequelize({
   database: 'workflow',
   username: 'root',
   password: '',
-  modelPaths: [__dirname + '/models']
+  modelPaths: [__dirname + '/models'],
+  pool: {
+    max: 10,
+    min: 1,
+    idle: 10000
+  }
 });

@@ -11,29 +11,31 @@ export class MySqlPersistence implements IPersistenceProvider {
 
   constructor(connectionString: string) {
     this.sequelize = new Sequelize(connectionString);
-    this.connect = new Promise<void>((resolve, reject) => {
-      this.sequelize
-        .authenticate()
-        .then(async () => {
-          await this.sequelize.sync();
-          resolve();
-        })
-        .catch(err => {
-          reject(err);
-        });
+    this.connect = new Promise<void>(async (resolve, reject) => {
+
+      try {
+        await this.sequelize.authenticate();
+        await this.sequelize.sync();
+        resolve();
+      }
+      catch(err) {
+        reject(err);
+      }
+
     });
   }
 
   public async createNewWorkflow(instance: WorkflowInstance): Promise<string> {
-    let deferred = new Promise<string>((resolve, reject) => {
+    let deferred = new Promise<string>( async (resolve, reject) => {
 
-      workflowCollection
-        .create(instance, { include: [ExecutionPointer] })
-        .then(workflow => {
-          instance.id = workflow["id"].toString();
-          resolve(instance.id);
-        })
-        .catch(err => reject(err));
+      try {
+        let workflow = await workflowCollection.create(instance, { include: [ExecutionPointer] });
+        instance.id = workflow["id"].toString();
+        resolve(instance.id);
+      }
+      catch(err) {
+        reject(err);
+      }
     });
     return deferred;
   }
@@ -87,16 +89,16 @@ export class MySqlPersistence implements IPersistenceProvider {
   }
 
   public async createEventSubscription(subscription: EventSubscription): Promise<void> {
-    var deferred = new Promise<void>((resolve, reject) => {
-      subscriptionCollection
-        .create(subscription)
-        .then(sub => {
-          subscription.id = sub["id"].toString();
-          resolve();
-        })
-        .catch(err => {
-          reject(err);
-        });
+    var deferred = new Promise<void>(async (resolve, reject) => {
+
+      try {
+        let sub = await subscriptionCollection.create(subscription);
+        subscription.id = sub["id"].toString();
+        resolve();
+      }
+      catch(err) {
+        reject(err);
+      }
     });
     return deferred;
   }
@@ -148,16 +150,15 @@ export class MySqlPersistence implements IPersistenceProvider {
   }
 
   public async createEvent(event: Event): Promise<string> {
-    var deferred = new Promise<string>((resolve, reject) => {
-        eventCollection
-        .create(event)
-        .then(evnt => {
-          event.id = evnt["id"].toString();
-          resolve();
-        })
-        .catch(err => {
-          reject(err);
-        });
+    var deferred = new Promise<string>(async (resolve, reject) => {
+      try {
+        let evnt = await eventCollection.create(event);
+        event.id = evnt["id"].toString();
+        resolve(event.id);
+      }
+      catch(err) {
+        reject(err);
+      }
     });
     return deferred;
   }

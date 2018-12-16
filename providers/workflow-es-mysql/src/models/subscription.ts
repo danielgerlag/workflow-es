@@ -1,10 +1,14 @@
-import { Table, Model, Column, PrimaryKey, BelongsTo} from 'sequelize-typescript'
+import { Table, Model, Column, Default, PrimaryKey, BelongsTo, DataType} from 'sequelize-typescript'
 import { Workflow } from './workflow'
 
-@Table
+@Table({
+    timestamps: false,
+    freezeTableName: true
+})
 export class Subscription extends Model<Subscription> {
     
-    @Column
+    @Default(DataType.UUIDV1)
+    @Column(DataType.UUID)
     @PrimaryKey
     id: string;
     
@@ -16,9 +20,14 @@ export class Subscription extends Model<Subscription> {
     
     @Column
     eventName: string;
-    
-    @Column
-    eventKey: any; //Can I assume that this is a string once the eventKey in Event is a string?
+
+    @Column(DataType.TEXT)
+    get eventKey(): any {
+        return JSON.parse(this.getDataValue('eventKey'));
+    };
+    set eventKey(data: any) {
+        this.setDataValue('eventKey', data);
+    }
     
     @Column
     subscribeAsOf: Date;

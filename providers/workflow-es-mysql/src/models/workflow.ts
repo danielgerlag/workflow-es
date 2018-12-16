@@ -1,10 +1,14 @@
-import { Table, Column, Model, HasMany, PrimaryKey } from 'sequelize-typescript';
+import { Table, Column, Default, Model, HasMany, PrimaryKey, DataType } from 'sequelize-typescript';
 import { ExecutionPointer } from './executionPointer'
 
-@Table
+@Table({
+    timestamps: false,
+    freezeTableName: true
+})
 export class Workflow extends Model<Workflow> {
     
-    @Column
+    @Default(DataType.UUIDV1)
+    @Column(DataType.UUID)
     @PrimaryKey
     id : string;
 
@@ -23,8 +27,13 @@ export class Workflow extends Model<Workflow> {
     @Column
     status : number;
 
-    @Column
-    data : any; //Is this a BLOOB data?
+    @Column(DataType.TEXT)
+    get data(): any {
+        return JSON.parse(this.getDataValue('data'));
+    };
+    set data(data: any) {
+        this.setDataValue('data', data);
+    }
 
     @Column
     createTime : Date;

@@ -1,9 +1,13 @@
-import { Table, Model, Column, PrimaryKey } from 'sequelize-typescript'
+import { Table, Model, Column, Default, PrimaryKey, DataType } from 'sequelize-typescript'
 
-@Table
+@Table({
+    timestamps: false,
+    freezeTableName: true
+})
 export class Event extends Model<Event> {
     
-    @Column
+    @Default(DataType.UUIDV1)
+    @Column(DataType.UUID)
     @PrimaryKey
     id: string;    
     
@@ -13,8 +17,13 @@ export class Event extends Model<Event> {
     @Column
     eventKey: string;
     
-    @Column
-    eventData: any; //Is this a BLOOB data?
+    @Column(DataType.TEXT)
+    get eventData(): any {
+        return JSON.parse(this.getDataValue('eventData'));
+    };
+    set eventData(data: any) {
+        this.setDataValue('eventData', data);
+    }
     
     @Column
     eventTime: Date;
