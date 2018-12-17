@@ -1,5 +1,6 @@
 import { IPersistenceProvider, WorkflowInstance, ExecutionPointer, Event } from "workflow-es";
 import { MongoDBPersistence } from "../src/mongodb-provider";
+import { getConnectionString } from "./helpers/config";
 var stringify = require('json-stable-stringify');
 
 describe("mongodb-provider", () => {
@@ -10,7 +11,7 @@ describe("mongodb-provider", () => {
     var ev2: Event;  
 
     beforeAll((done) => {
-        var mongoProvider = new MongoDBPersistence("mongodb://127.0.0.1:27019/tests");     
+        var mongoProvider = new MongoDBPersistence(getConnectionString());
         mongoProvider.connect.then(() => {
           
             persistence = mongoProvider;
