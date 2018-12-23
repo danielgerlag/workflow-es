@@ -1,5 +1,5 @@
 import { IPersistenceProvider, WorkflowInstance, EventSubscription, Event, WorkflowStatus } from "workflow-es";
-import { Workflow as workflowCollection } from "./models/workflow";
+import { Workflow as workflowCollection, Workflow } from "./models/workflow";
 import { Subscription as subscriptionCollection } from "./models/subscription";
 import { Event as eventCollection } from "./models/event";
 import { Sequelize } from "sequelize-typescript";
@@ -57,7 +57,7 @@ export class MySqlPersistence implements IPersistenceProvider {
   public async getWorkflowInstance(workflowId: string): Promise<WorkflowInstance> {
     let deferred = new Promise<WorkflowInstance>(async (resolve, reject) => {
       try {
-        let workflow = await workflowCollection.findById(workflowId);
+        let workflow = await workflowCollection.findById(workflowId, { include: [ExecutionPointer] });
         resolve(workflow);
       } catch (err) {
         reject(err);
@@ -72,9 +72,9 @@ export class MySqlPersistence implements IPersistenceProvider {
         let instances = await workflowCollection.findAll({
           where: {
             status: WorkflowStatus.Runnable,
-            nextExecution: { $lt: Date.now() },
-            id: 1
-          }
+            nextExecution: { $lt: Date.now() }
+          }, 
+          include: [ExecutionPointer]
         });
         var result = [];
         for (let item of instances) {
@@ -111,7 +111,8 @@ export class MySqlPersistence implements IPersistenceProvider {
                       eventName: eventName,
                       eventKey: eventKey,
                       subscribeAsOf: { $lt: asOf }
-                  }
+                  },
+                  include: [Workflow]
               });
 
               let result = new Array<EventSubscription>();
@@ -119,7 +120,7 @@ export class MySqlPersistence implements IPersistenceProvider {
                   let event = new EventSubscription();
 
                   event.id = instance.id;
-                  //event.workflowId = instance.workflowId;
+                  event.workflowId = instance.workflowId.id;
                   event.stepId = instance.stepId;
                   event.eventName = instance.eventName;
                   event.eventKey = instance.eventKey;
@@ -180,8 +181,7 @@ export class MySqlPersistence implements IPersistenceProvider {
             var events = await eventCollection.findAll({ 
                 where: {
                     isProcessed: false,
-                    eventTime: { $lt: new Date() },
-                    id: 1
+                    eventTime: { $lt: new Date() }
                 }
             });
             var result = [];
@@ -231,8 +231,7 @@ export class MySqlPersistence implements IPersistenceProvider {
                   where: {
                       eventName: eventName,
                       eventKey: eventKey,
-                      eventTime: { $gt: asOf },
-                      id: 1
+                      eventTime: { $gt: asOf }
                   }
               });
               var result = [];
