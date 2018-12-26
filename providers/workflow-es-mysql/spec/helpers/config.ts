@@ -1,11 +1,11 @@
 import { Sequelize } from 'sequelize-typescript';
 
 export function getConnectionString() {
-    return "mysql://root:bonamassa@127.0.0.1:3306/tests";
+    return "mysql://root:test-password@127.0.0.1:3308/tests";
 }
 
 export async function createTestSchema() {
-    var sequelize = new Sequelize('mysql://root:bonamassa@127.0.0.1:3306');
+    var sequelize = new Sequelize('mysql://root:test-password@127.0.0.1:3308');
     await sequelize.query(`CREATE DATABASE IF NOT EXISTS \`tests\``);
     await sequelize.close();
 }
