@@ -1,5 +1,5 @@
 import { IPersistenceProvider, WorkflowInstance, EventSubscription, Event, WorkflowStatus } from "workflow-es";
-import { Workflow as workflowCollection } from "./models/workflow";
+import { Workflow as workflowCollection, Workflow } from "./models/workflow";
 import { Subscription as subscriptionCollection } from "./models/subscription";
 import { Event as eventCollection } from "./models/event";
 import { initializeSequelize } from "./sequelize";
@@ -119,7 +119,8 @@ export class MySqlPersistence implements IPersistenceProvider {
                       eventName: eventName,
                       eventKey: eventKey,
                       subscribeAsOf: { $lt: asOf }
-                  }
+                  },
+                  include: [Workflow]
               });
 
               let result = new Array<EventSubscription>();
