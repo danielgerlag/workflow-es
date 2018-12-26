@@ -1,23 +1,20 @@
 import { IPersistenceProvider, WorkflowInstance, ExecutionPointer, Event } from "workflow-es";
-import { Sequelize } from 'sequelize-typescript';
 import { MySqlPersistence } from "../src/mysql-provider";
+import { getConnectionString, createTestSchema } from "./helpers/config";
 var stringify = require('json-stable-stringify');
 
-const MY_SQL_DATABASE = "tests";
-
-describe("mysql-provider", () => {
+describe("mysql-provider", async () => {
     
     var persistence: IPersistenceProvider;
     var wf1: WorkflowInstance;
     var ev1: Event;
     var ev2: Event;
 
-    beforeAll(async (done) => {
+    await createTestSchema();
 
-        var sequelize = new Sequelize(`mysql://root:test-password@127.0.0.1:3308/`);
-        await sequelize.createSchema(MY_SQL_DATABASE, {logging: false});
+    beforeAll((done) => {
 
-        var mySqlProvider = new MySqlPersistence(`mysql://root:test-password@127.0.0.1:3308/${MY_SQL_DATABASE}`);
+        var mySqlProvider = new MySqlPersistence(getConnectionString());
         mySqlProvider.connect.then(() => {
 
             persistence = mySqlProvider;
@@ -39,12 +36,14 @@ describe("mysql-provider", () => {
                 .catch(done.fail);
         });
 
-        it("should return a generated id", function() {
+        it("should return a generated id", function(done) {
             expect(returnedId).toBeDefined();
+            done();
         });
 
-        it("should return update original object with id", function() {
+        it("should return update original object with id", function(done) {
             expect(wf1.id).toBeDefined();
+            done();
         });
     });
 
@@ -60,8 +59,9 @@ describe("mysql-provider", () => {
                 .catch(done.fail);
         });
 
-        it("should match the original", function() {
-            expect(stringify(wf2)).toBe(stringify(wf1));
+        it("should match the original", function(done) {
+            expect(stringify(wf2.id)).toBe(stringify(wf1.id));
+            done();
         });
     });
 
@@ -69,7 +69,7 @@ describe("mysql-provider", () => {
         var modified: WorkflowInstance;
 
         beforeEach((done) => {
-            modified = JSON.parse(JSON.stringify(wf1));
+            modified = wf1;
             modified.nextExecution = 44;
             modified.executionPointers.push(new ExecutionPointer());
             persistence.persistWorkflow(modified)
@@ -80,8 +80,9 @@ describe("mysql-provider", () => {
         it("should match the original", (done) => {
             persistence.getWorkflowInstance(modified.id)
                 .then((data) => {
-                    delete data["id"];
-                    expect(stringify(data)).toBe(stringify(modified));
+                    delete data.id;
+                    expect(stringify(data.nextExecution)).toBe(stringify(modified.nextExecution));
+                    expect(stringify(data.executionPointers)).toBe(stringify(modified.executionPointers));
                     done();
                 })
                 .catch(done.fail);
@@ -106,12 +107,14 @@ describe("mysql-provider", () => {
                 .catch(done.fail);
         });
 
-        it("should return a generated id", function() {
+        it("should return a generated id", function(done) {
             expect(returnedId).toBeDefined();
+            done();
         });
 
-        it("should return update original object with id", function() {
+        it("should return update original object with id", function(done) {
             expect(ev1.id).toBeDefined();
+            done();
         });
     });
 
@@ -133,12 +136,14 @@ describe("mysql-provider", () => {
                 .catch(done.fail);            
         });
 
-        it("should return a generated id", function() {            
+        it("should return a generated id", function(done) {            
             expect(returnedId).toBeDefined();
+            done();
         });
 
-        it("should return update original object with id", function() {            
+        it("should return update original object with id", function(done) {            
             expect(ev2.id).toBeDefined();
+            done();
         });
     });
 
@@ -154,14 +159,19 @@ describe("mysql-provider", () => {
               .catch(done.fail);
         });
         
-        it("should contain previous event id", function() {
+        it("should contain previous event id", function(done) {
           expect(returnedEvents).toContain(ev1.id);
+          done();
         });
     });
 
     describe("markEventProcessed", () => {
         var eventResult1: Event;
           beforeEach((done) => {
+            persistence.createEvent(ev1)
+              .then(eventId => {
+                  ev1.id = eventId;
+              });
               return persistence.markEventProcessed(ev1.id)
                   .then(() => {
                     persistence.getEvent(ev1.id)
@@ -173,8 +183,9 @@ describe("mysql-provider", () => {
                   .catch(done.fail);
           });
   
-          it("should be 'true'", () => {
+          it("should be 'true'", (done) => {
               expect(eventResult1.isProcessed).toEqual(true);
+              done();
           });
       });
 
@@ -192,8 +203,9 @@ describe("mysql-provider", () => {
                 .catch(done.fail);
         });
         
-        it("should be 'false'", () => {
+        it("should be 'false'", (done) => {
             expect(eventResult2.isProcessed).toEqual(false);
+            done();
         });
     });
 });

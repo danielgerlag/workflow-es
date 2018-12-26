@@ -6,9 +6,11 @@ import { Table, Model, Column, Default, PrimaryKey, DataType } from 'sequelize-t
 })
 export class Event extends Model<Event> {
     
-    @Default(DataType.UUIDV1)
-    @Column(DataType.UUID)
-    @PrimaryKey
+    @Column({
+        type: DataType.UUID,
+        defaultValue: DataType.UUIDV1,
+        primaryKey: true
+    })
     id: string;    
     
     @Column
@@ -21,13 +23,17 @@ export class Event extends Model<Event> {
     get eventData(): any {
         return JSON.parse(this.getDataValue('eventData'));
     };
-    set eventData(data: any) {
-        this.setDataValue('eventData', data);
+    set eventData(eventData: any) {
+        if (eventData) {
+            this.setDataValue('eventData', JSON.stringify(eventData));
+        }
     }
     
     @Column
     eventTime: Date;
     
-    @Column
+    @Column({
+        defaultValue: false
+    })
     isProcessed: boolean;
 }

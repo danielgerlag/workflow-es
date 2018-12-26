@@ -2,20 +2,16 @@ import { IPersistenceProvider, WorkflowInstance, EventSubscription, Event, Workf
 import { Workflow as workflowCollection } from "./models/workflow";
 import { Subscription as subscriptionCollection } from "./models/subscription";
 import { Event as eventCollection } from "./models/event";
-import { Sequelize } from "sequelize-typescript";
-import { ExecutionPointer } from "./models/executionPointer";
+import { initializeSequelize } from "./sequelize";
 
 export class MySqlPersistence implements IPersistenceProvider {
-  public sequelize: any;
   public connect: Promise<void>;
 
   constructor(connectionString: string) {
-    this.sequelize = new Sequelize(connectionString);
     this.connect = new Promise<void>(async (resolve, reject) => {
 
       try {
-        await this.sequelize.authenticate();
-        await this.sequelize.sync();
+        await initializeSequelize(connectionString)
         resolve();
       }
       catch(err) {
@@ -29,8 +25,8 @@ export class MySqlPersistence implements IPersistenceProvider {
     let deferred = new Promise<string>( async (resolve, reject) => {
 
       try {
-        let workflow = await workflowCollection.create(instance, { include: [ExecutionPointer] });
-        instance.id = workflow["id"].toString();
+        let workflow = await workflowCollection.create(instance);
+        instance.id = workflow.id;
         resolve(instance.id);
       }
       catch(err) {
@@ -42,11 +38,23 @@ export class MySqlPersistence implements IPersistenceProvider {
   public async persistWorkflow(instance: WorkflowInstance): Promise<void> {
     let deferred = new Promise<void>(async (resolve, reject) => {
       var id = instance.id;
-      delete instance["id"];
+      // delete instance.id; This line is deleting the id from the original instance
+
+      var newInstance = {
+        workflowDefinitionId: instance.workflowDefinitionId,
+        version: instance.version,
+        description: instance.description,
+        nextExecution: instance.nextExecution,
+        status: instance.status,
+        data: instance.data,
+        createTime: instance.createTime,
+        completeTime: instance.completeTime,
+        executionPointers: instance.executionPointers
+      }
 
       try {
-        var workflow = await workflowCollection.findOne({ where: { id: id }, include: [ExecutionPointer] });
-        await workflow.updateAttributes(instance);
+        var workflow = await workflowCollection.findOne({ where: { id: id }});
+        await workflow.update(newInstance);
         resolve();
       } catch (err) {
         reject(err);
@@ -57,8 +65,8 @@ export class MySqlPersistence implements IPersistenceProvider {
   public async getWorkflowInstance(workflowId: string): Promise<WorkflowInstance> {
     let deferred = new Promise<WorkflowInstance>(async (resolve, reject) => {
       try {
-        let workflow = await workflowCollection.findById(workflowId);
-        resolve(workflow);
+        let workflow = await workflowCollection.findOne({where: { id: workflowId }});
+        resolve(workflow.get({ plain: true }));
       } catch (err) {
         reject(err);
       }
@@ -72,13 +80,13 @@ export class MySqlPersistence implements IPersistenceProvider {
         let instances = await workflowCollection.findAll({
           where: {
             status: WorkflowStatus.Runnable,
-            nextExecution: { $lt: Date.now() },
-            id: 1
-          }
+            nextExecution: { $lt: Date.now() }
+          },
+          attributes: ['id']
         });
         var result = [];
         for (let item of instances) {
-          result.push(item["id"].toString());
+          result.push(item.id);
         }
         resolve(result);
       } catch (err) {
@@ -93,7 +101,7 @@ export class MySqlPersistence implements IPersistenceProvider {
 
       try {
         let sub = await subscriptionCollection.create(subscription);
-        subscription.id = sub["id"].toString();
+        subscription.id = sub.id;
         resolve();
       }
       catch(err) {
@@ -119,7 +127,7 @@ export class MySqlPersistence implements IPersistenceProvider {
                   let event = new EventSubscription();
 
                   event.id = instance.id;
-                  //event.workflowId = instance.workflowId;
+                  event.workflowId = instance.workflowId;
                   event.stepId = instance.stepId;
                   event.eventName = instance.eventName;
                   event.eventKey = instance.eventKey;
@@ -153,7 +161,7 @@ export class MySqlPersistence implements IPersistenceProvider {
     var deferred = new Promise<string>(async (resolve, reject) => {
       try {
         let evnt = await eventCollection.create(event);
-        event.id = evnt["id"].toString();
+        event.id = evnt.id;
         resolve(event.id);
       }
       catch(err) {
@@ -166,7 +174,7 @@ export class MySqlPersistence implements IPersistenceProvider {
     var deferred = new Promise<Event>(async (resolve, reject) => {
         try {
             let event = await eventCollection.findById(id);
-            resolve(event);
+            resolve(event.get({plain: true}));
         }
         catch(err) {
             reject(err);
@@ -180,13 +188,13 @@ export class MySqlPersistence implements IPersistenceProvider {
             var events = await eventCollection.findAll({ 
                 where: {
                     isProcessed: false,
-                    eventTime: { $lt: new Date() },
-                    id: 1
-                }
+                    eventTime: { $lt: new Date() }
+                },
+                attributes: ['id']
             });
             var result = [];
             for (let event of events) {
-                result.push(event["id"].toString());
+                result.push(event.id);
             }
             resolve(result);
         }
@@ -198,9 +206,10 @@ export class MySqlPersistence implements IPersistenceProvider {
   }
 
   public async markEventProcessed(id: string): Promise<void> {
+    console.log(`markEventProcessed(id:${id})`);
       var deferred = new Promise<void>(async (resolve, reject) => {
           try {
-            var event = await eventCollection.findOne({ where: { id: id } });
+            var event = await eventCollection.findByPrimary(id);
             await event.update({ isProcessed: true })
             resolve();
           }
@@ -213,7 +222,7 @@ export class MySqlPersistence implements IPersistenceProvider {
   public async markEventUnprocessed(id: string): Promise<void> {
     var deferred = new Promise<void>(async (resolve, reject) => {
         try {
-          var event = await eventCollection.findOne({ where: { id: id } });
+          var event = await eventCollection.findById(id);
           await event.update({ isProcessed: false })
           resolve();
         }
@@ -231,13 +240,13 @@ export class MySqlPersistence implements IPersistenceProvider {
                   where: {
                       eventName: eventName,
                       eventKey: eventKey,
-                      eventTime: { $gt: asOf },
-                      id: 1
-                  }
+                      eventTime: { $gt: asOf }
+                  },
+                  attributes: ['id']
               });
               var result = [];
               for (let event of events) {
-                  result.push(event["id"].toString);
+                  result.push(event.id);
               }
               resolve(result);
           }
