@@ -103,10 +103,6 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
         
         scope.push(exceptionPointer.id);
 
-        exceptionPointer.active = false;
-        exceptionPointer.endTime = new Date();
-        exceptionPointer.status = PointerStatus.Failed;
-
         while (scope.length > 0) {
             let pointerId = scope.pop();
             let pointer = workflow.executionPointers.find(x => x.id == pointerId);
@@ -115,12 +111,17 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
             let resume = true;
             let revert = false;
 
-            if (scope.length > 0) {
-                let parentId = scope[scope.length - 1];
+            let txnStack = scope.slice();
+
+            while (txnStack.length > 0) {
+                let parentId = txnStack.pop();
                 let parentPointer = workflow.executionPointers.find(x => x.id == parentId);
                 let parentStep = definition.steps.find(x => x.id == parentPointer.stepId);
-                resume = parentStep.resumeChildrenAfterCompensation();
-                revert = parentStep.revertChildrenAfterCompensation();
+
+                if ((!parentStep.resumeChildrenAfterCompensation()) || (parentStep.revertChildrenAfterCompensation())) {
+                    resume = parentStep.resumeChildrenAfterCompensation();
+                    revert = parentStep.revertChildrenAfterCompensation();
+                }
             }
 
             let errorBehavior = this.isNull(step.errorBehavior, WorkflowErrorHandling.Compensate);
@@ -130,9 +131,11 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
                 continue;
             }
 
+            exceptionPointer.active = false;
+            exceptionPointer.endTime = new Date();
+            exceptionPointer.status = PointerStatus.Failed;
+
             if (!isNullOrUndefined(step.compensationStepId)) {
-                pointer.active = false;
-                pointer.endTime = new Date();
                 pointer.status = PointerStatus.Compensated;
 
                 let compensationPointer = this.pointerFactory.buildCompensationPointer(pointer, exceptionPointer, step.compensationStepId);
