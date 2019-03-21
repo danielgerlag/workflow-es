@@ -1,0 +1,40 @@
+{
+  "name": "workflow-es-redis",
+  "version": "2.1.0",
+  "description": "Redis providers for Workflow ES",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jasmine"
+  },
+  "keywords": [
+    "workflow",
+    "redis"
+  ],
+  "author": {
+    "email": "daniel@gerlag.ca",
+    "name": "Daniel Gerlag"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^6.0.51",
+    "@types/jasmine": "^2.5.38",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.4.1",
+    "typescript": "^2.2.1"
+  },
+  "dependencies": {
+    "@types/node_redis": "^0.8.29",
+    "inversify": "^4.1.0",
+    "ioredis": "^4.6.2",
+    "redis": "^2.8.0",
+    "redlock": "^3.1.2",
+    "reflect-metadata": "^0.1.10",
+    "workflow-es": "^2.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgerlag/workflow-es.git"
+  }
+}
