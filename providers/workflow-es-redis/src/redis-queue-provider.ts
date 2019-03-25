@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import Redis from "ioredis";
+import Redis = require('ioredis');
 import { IQueueProvider, QueueType, TYPES, ILogger } from "workflow-es";
 
 @injectable()

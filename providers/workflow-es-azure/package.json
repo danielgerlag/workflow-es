@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-azure",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Azure providers for Workflow ES",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",

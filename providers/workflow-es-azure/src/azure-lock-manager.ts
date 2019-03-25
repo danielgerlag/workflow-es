@@ -16,7 +16,7 @@ export class AzureLockManager implements IDistributedLockProvider {
         this.blobService = createBlobService(connectionString);
         this.blobService.createContainerIfNotExists(this.containerId, (error: Error, result: BlobService.ContainerResult, response: ServiceResponse): void => {
             //TODO: log
-            self.renewTimer = setInterval(this.renewLeases, 45, self);
+            self.renewTimer = setInterval(this.renewLeases, 45000, self);
         });    
     }
 

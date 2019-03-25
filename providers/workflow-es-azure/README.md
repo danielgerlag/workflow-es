@@ -19,7 +19,7 @@ const workflow_es = require("workflow-es");
 const workflow_azure = require("workflow-es-azure");
 ...
 var config = workflow_es.configureWorkflow();
-config.useLockManager(new workflow_azure.AzureLockManager('Azure storage connection string'));    
+config.useLockManager(new workflow_azure.AzureLockManager('Azure storage connection string'));   
 config.useQueueManager(new workflow_azure.AzureQueueProvider('Azure storage connection string'));
 
 var host = config.getHost();

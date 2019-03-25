@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { IDistributedLockProvider, TYPES, ILogger } from 'workflow-es';
-import Redis from 'ioredis';
-import Redlock from 'redlock';
+import Redis = require('ioredis');
+import Redlock = require('redlock');
 
 @injectable()
 export class RedisLockManager implements IDistributedLockProvider {
@@ -14,14 +14,14 @@ export class RedisLockManager implements IDistributedLockProvider {
 
     constructor(connection: Redis) {
         this.redis = connection;
-        this.redlock = new Redlock(connection);
-        this.renewTimer = setInterval(this.renewLeases, 45, this);
+        this.redlock = new Redlock([connection]);
+        this.renewTimer = setInterval(this.renewLeases, 45000, this);
     }
 
     public async aquireLock(id: string): Promise<boolean> {
         try {
             let lock = await this.redlock.lock(id, this.leaseDuration * 1000);
-            this.leases.set(id, lock);
+            this.leases.set(id, lock);            
             return true;
         }
         catch {
