@@ -61,10 +61,9 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
 
     public handleStepException(workflow: WorkflowInstance, definition: WorkflowDefinition, pointer: ExecutionPointer, step: WorkflowStepBase) {
         pointer.status = PointerStatus.Failed;            
-        let compensatingStepId = this.findScopeCompensationStepId(workflow, definition, pointer);
         let errorOption = step.errorBehavior;
         if (!errorOption) {
-            if (compensatingStepId !== undefined)
+            if (this.shouldCompensate(workflow, definition, pointer))
                 errorOption = WorkflowErrorHandling.Compensate;
             else
                 errorOption = definition.errorBehavior;
@@ -161,7 +160,7 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
         }
     }
 
-    private findScopeCompensationStepId(workflow: WorkflowInstance, definition: WorkflowDefinition, currentPointer: ExecutionPointer): number {
+    private shouldCompensate(workflow: WorkflowInstance, definition: WorkflowDefinition, currentPointer: ExecutionPointer): boolean {
         let scope = [];
         if (currentPointer.scope)
             scope = currentPointer.scope.slice();
@@ -173,11 +172,13 @@ export class ExecutionResultProcessor implements IExecutionResultProcessor {
             let pointerId = scope.pop();
             let pointer = workflow.executionPointers.find(x => x.id == pointerId);
             let step = definition.steps.find(x => x.id == pointer.stepId);
+            if (step.revertChildrenAfterCompensation)
+                return true;
             if ((step.compensationStepId !== undefined) && (step.compensationStepId !== null))
-                return step.compensationStepId;
+                return true;
         }
 
-        return undefined;
+        return false;
     }
 
     private isNull(obj: any, fallback: any): any {
