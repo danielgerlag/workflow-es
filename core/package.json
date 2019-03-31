@@ -1,6 +1,6 @@
 {
   "name": "workflow-es",
-  "version": "2.3.3",
+  "version": "2.3.5",
   "description": "A lightweight workflow engine for Node.js",
   "main": "./build/src/index.js",
   "typings": "./build/src/index.d.ts",
@@ -10,7 +10,8 @@
     "test": "jasmine"
   },
   "keywords": [
-    "workflow", "saga"
+    "workflow",
+    "saga"
   ],
   "author": {
     "email": "daniel@gerlag.ca",

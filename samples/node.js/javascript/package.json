@@ -1,10 +1,12 @@
 {
   "name": "@workflow/node-samples",
   "version": "1.0.0",
-  "description": "Workflow samples for node.js",  
+  "description": "Workflow samples for node.js",
   "dependencies": {
+    "ioredis": "^4.6.2",
+    "mongodb": "^2.2.11",
     "workflow-es": "^2.2.0",
     "workflow-es-mongodb": "^2.0.0",
-    "mongodb": "^2.2.11"
+    "workflow-es-redis": "^2.0.0"
   }
 }

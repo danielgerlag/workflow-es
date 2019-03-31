@@ -1,7 +1,7 @@
 {
-  "name": "workflow-es-azure",
-  "version": "2.1.1",
-  "description": "Azure providers for Workflow ES",
+  "name": "workflow-es-redis",
+  "version": "2.1.0",
+  "description": "Redis providers for Workflow ES",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "keywords": [
     "workflow",
-    "azure"
+    "redis"
   ],
   "author": {
     "email": "daniel@gerlag.ca",
@@ -25,9 +25,11 @@
     "typescript": "^2.2.1"
   },
   "dependencies": {
+    "@types/node_redis": "^0.8.29",
     "inversify": "^4.1.0",
-    "json-stable-stringify": "^1.0.1",
-    "azure-storage": "^2.1.0",
+    "ioredis": "^4.6.2",
+    "redis": "^2.8.0",
+    "redlock": "^3.1.2",
     "reflect-metadata": "^0.1.10",
     "workflow-es": "^2.1.0"
   },
