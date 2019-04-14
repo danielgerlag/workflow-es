@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-mysql",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "description": "MySQL provider for Workflow ES",
   "main": ".build/src/index.js",
   "typings": "./build/src/index.d.ts",
