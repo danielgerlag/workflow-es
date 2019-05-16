@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-typescript';
+import { Sequelize } from 'sequelize';
 
 export function getConnectionString() {
     return "mysql://root:test-password@127.0.0.1:3308/tests";

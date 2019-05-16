@@ -1,9 +1,6 @@
 import { Table, Model, Column, Default, PrimaryKey, DataType } from 'sequelize-typescript'
 
-@Table({
-    timestamps: false,
-    freezeTableName: true
-})
+@Table
 export class Event extends Model<Event> {
     
     @Column({

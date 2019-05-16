@@ -1,10 +1,7 @@
 import { Table, Model, Column, Default, PrimaryKey, BelongsTo, DataType} from 'sequelize-typescript'
 import { Workflow } from './workflow'
 
-@Table({
-    timestamps: false,
-    freezeTableName: true
-})
+@Table
 export class Subscription extends Model<Subscription> {
     
     @Column({

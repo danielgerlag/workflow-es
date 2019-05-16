@@ -8,7 +8,7 @@ let basicWorkflowScope = {
      step2Ticker: 0
  }
 
- describe("basic workflow", () => {
+ describe("basic workflow", async () => {
 
      class Step1 extends StepBody {    
          public run(context: StepExecutionContext): Promise<ExecutionResult> {
@@ -51,7 +51,7 @@ let basicWorkflowScope = {
      }
 
      beforeAll(async (done) => {
-         await createTestSchema();
+        await createTestSchema();
          await initializeWorkflow();
          
         host.registerWorkflow(Basic_Workflow);
@@ -64,7 +64,7 @@ let basicWorkflowScope = {
      });
 
      afterAll(() => {
-         host.stop();        
+        //  host.stop();        
      });
 
      it("should have an id", function() {            

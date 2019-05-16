@@ -1,9 +1,6 @@
 import { Table, Column, Default, Model, HasMany, PrimaryKey, DataType } from 'sequelize-typescript';
 
-@Table({
-    timestamps: false,
-    freezeTableName: true
-})
+@Table
 export class Workflow extends Model<Workflow> {
     
     @Column({

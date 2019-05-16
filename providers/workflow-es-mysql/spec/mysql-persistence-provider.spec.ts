@@ -10,9 +10,8 @@ describe("mysql-provider", async () => {
     var ev1: Event;
     var ev2: Event;
 
-    await createTestSchema();
-
-    beforeAll((done) => {
+    beforeAll(async (done) => {
+        await createTestSchema();
 
         var mySqlProvider = new MySqlPersistence(getConnectionString());
         mySqlProvider.connect.then(() => {
