@@ -29,7 +29,7 @@
   "dependencies": {
     "inversify": "^4.1.0",
     "json-stable-stringify": "^1.0.1",
-    "mongodb": "^2.2.11",
+    "mongodb": "^3.2.7",
     "reflect-metadata": "^0.1.10",
     "workflow-es": "^2.1.0"
   },
