@@ -13,11 +13,12 @@ export class MongoDBPersistence implements IPersistenceProvider {
     
     constructor(connectionString: string) {
         var self = this;
-        this.connect = new Promise<void>((resolve, reject) => {            
-            MongoClient.connect(connectionString, (err, db) => {
+        this.connect = new Promise<void>((resolve, reject) => {  
+            const options =  { useNewUrlParser: true,  useUnifiedTopology: true };
+            MongoClient.connect(connectionString, options, (err, client) => {
                 if (err)
                     reject(err);
-                self.db = db;
+                self.db = client.db();
                 self.workflowCollection = self.db.collection("workflows");
                 self.subscriptionCollection = self.db.collection("subscriptions");
                 self.eventCollection = self.db.collection("events");
