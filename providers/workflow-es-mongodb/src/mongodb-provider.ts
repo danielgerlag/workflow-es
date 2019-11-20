@@ -4,7 +4,7 @@ import { MongoClient, ObjectID } from "mongodb";
 export class MongoDBPersistence implements IPersistenceProvider {
 
     public connect: Promise<void>;
-    private db: any;
+    private client: any;
     private workflowCollection: any;
     private subscriptionCollection: any;
     private eventCollection: any;
@@ -18,10 +18,11 @@ export class MongoDBPersistence implements IPersistenceProvider {
             MongoClient.connect(connectionString, options, (err, client) => {
                 if (err)
                     reject(err);
-                self.db = client.db();
-                self.workflowCollection = self.db.collection("workflows");
-                self.subscriptionCollection = self.db.collection("subscriptions");
-                self.eventCollection = self.db.collection("events");
+                self.client = client;
+                const db = self.client.db();
+                self.workflowCollection = db.collection("workflows");
+                self.subscriptionCollection = db.collection("subscriptions");
+                self.eventCollection = db.collection("events");
                 resolve();
             });
         });        
