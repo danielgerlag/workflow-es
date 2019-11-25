@@ -1,6 +1,6 @@
 {
   "name": "workflow-es-mongodb",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "MongoDB provider for Workflow ES",
   "main": "./build/src/index.js",
   "typings": "./build/src/index.d.ts",
