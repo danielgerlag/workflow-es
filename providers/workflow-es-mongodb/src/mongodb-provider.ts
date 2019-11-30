@@ -4,7 +4,7 @@ import { MongoClient, ObjectID } from "mongodb";
 export class MongoDBPersistence implements IPersistenceProvider {
 
     public connect: Promise<void>;
-    private db: any;
+    private client: any;
     private workflowCollection: any;
     private subscriptionCollection: any;
     private eventCollection: any;
@@ -13,14 +13,16 @@ export class MongoDBPersistence implements IPersistenceProvider {
     
     constructor(connectionString: string) {
         var self = this;
-        this.connect = new Promise<void>((resolve, reject) => {            
-            MongoClient.connect(connectionString, (err, db) => {
+        this.connect = new Promise<void>((resolve, reject) => {  
+            const options =  { useNewUrlParser: true,  useUnifiedTopology: true };
+            MongoClient.connect(connectionString, options, (err, client) => {
                 if (err)
                     reject(err);
-                self.db = db;
-                self.workflowCollection = self.db.collection("workflows");
-                self.subscriptionCollection = self.db.collection("subscriptions");
-                self.eventCollection = self.db.collection("events");
+                self.client = client;
+                const db = self.client.db();
+                self.workflowCollection = db.collection("workflows");
+                self.subscriptionCollection = db.collection("subscriptions");
+                self.eventCollection = db.collection("events");
                 resolve();
             });
         });        
