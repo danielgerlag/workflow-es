@@ -1,15 +1,13 @@
 import { Table, Column, Default, Model, HasMany, PrimaryKey, DataType } from 'sequelize-typescript';
-import { ExecutionPointer } from './executionPointer'
 
-@Table({
-    timestamps: false,
-    freezeTableName: true
-})
+@Table
 export class Workflow extends Model<Workflow> {
     
-    @Default(DataType.UUIDV1)
-    @Column(DataType.UUID)
-    @PrimaryKey
+    @Column({
+        type: DataType.UUID,
+        defaultValue: DataType.UUIDV1,
+        primaryKey: true
+    })
     id : string;
 
     @Column
@@ -32,7 +30,7 @@ export class Workflow extends Model<Workflow> {
         return JSON.parse(this.getDataValue('data'));
     };
     set data(data: any) {
-        this.setDataValue('data', data);
+        this.setDataValue('data', JSON.stringify(data));
     }
 
     @Column
@@ -41,9 +39,11 @@ export class Workflow extends Model<Workflow> {
     @Column
     completeTime : Date;
 
-    @HasMany(() => ExecutionPointer)
-    executionPointers : ExecutionPointer[];
-
-
-    
+    @Column(DataType.TEXT)
+    get executionPointers(): any {
+        return JSON.parse(this.getDataValue('executionPointers'));
+    };
+    set executionPointers(data: any) {
+        this.setDataValue('executionPointers', JSON.stringify(data));
+    }
 }
