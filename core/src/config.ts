@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Container, ContainerModule, interfaces, injectable, inject } from "inversify";
-import { TYPES, IWorkflowRegistry, IQueueProvider, IWorkflowHost, IPersistenceProvider, IDistributedLockProvider, IWorkflowExecutor, IBackgroundWorker, IExecutionResultProcessor, IExecutionPointerFactory, ILogger } from "./abstractions";
+import { TYPES, IWorkflowRegistry, IQueueProvider, IWorkflowHost, IPersistenceProvider, IDistributedLockProvider, IWorkflowExecutor, IPollWorker, IWorkflowQueueWorker, IEventQueueWorker, IExecutionResultProcessor, IExecutionPointerFactory, ILogger } from "./abstractions";
 import { SingleNodeQueueProvider, SingleNodeLockProvider, MemoryPersistenceProvider, WorkflowExecutor, WorkflowQueueWorker, EventQueueWorker, PollWorker, WorkflowRegistry, WorkflowHost, ExecutionResultProcessor, ExecutionPointerFactory, NullLogger, ConsoleLogger } from "./services";
 
 export class WorkflowConfig {
@@ -30,6 +30,21 @@ export class WorkflowConfig {
         this.container.rebind<IDistributedLockProvider>(TYPES.IDistributedLockProvider).toConstantValue(service);        
     }
 
+    public usePollWorker(service: IPollWorker) {
+        service.updateFromContainer(this.container);
+        this.container.rebind<IPollWorker>(TYPES.IPollWorker).toConstantValue(service);        
+    }
+    
+    public useEventQueueWorker(service: IEventQueueWorker) {
+        service.updateFromContainer(this.container);
+        this.container.rebind<IEventQueueWorker>(TYPES.IEventQueueWorker).toConstantValue(service);     
+    }
+
+    public useWorkflowQueueWorker(service: IWorkflowQueueWorker) {
+        service.updateFromContainer(this.container);
+        this.container.rebind<IWorkflowQueueWorker>(TYPES.IWorkflowQueueWorker).toConstantValue(service);        
+    }
+
     public getHost(): IWorkflowHost {
         return this.container.get<IWorkflowHost>(TYPES.IWorkflowHost);
     }
@@ -46,9 +61,9 @@ export function configureWorkflow(): WorkflowConfig {
         bind<IExecutionResultProcessor>(TYPES.IExecutionResultProcessor).to(ExecutionResultProcessor);
         bind<IExecutionPointerFactory>(TYPES.IExecutionPointerFactory).to(ExecutionPointerFactory);
 
-        bind<IBackgroundWorker>(TYPES.IBackgroundWorker).to(WorkflowQueueWorker);
-        bind<IBackgroundWorker>(TYPES.IBackgroundWorker).to(EventQueueWorker);        
-        bind<IBackgroundWorker>(TYPES.IBackgroundWorker).to(PollWorker);
+        bind<IWorkflowQueueWorker>(TYPES.IWorkflowQueueWorker).to(WorkflowQueueWorker);
+        bind<IEventQueueWorker>(TYPES.IEventQueueWorker).to(EventQueueWorker);        
+        bind<IPollWorker>(TYPES.IPollWorker).to(PollWorker);
 
         bind<IWorkflowHost>(TYPES.IWorkflowHost).to(WorkflowHost).inSingletonScope();
         
