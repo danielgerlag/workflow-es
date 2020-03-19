@@ -1,11 +1,11 @@
-import { inject, injectable } from "inversify";
+import { inject, injectable, Container } from "inversify";
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, Event } from "../models";
-import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, IDistributedLockProvider, IWorkflowExecutor, ILogger, TYPES, QueueType, IBackgroundWorker } from "../abstractions";
+import { WorkflowBase, IPersistenceProvider, IWorkflowHost, IQueueProvider, IDistributedLockProvider, IWorkflowExecutor, ILogger, TYPES, QueueType, IPollWorker } from "../abstractions";
 import { WorkflowRegistry } from "./workflow-registry";
 import { WorkflowExecutor } from "./workflow-executor";
 
 @injectable()
-export class PollWorker implements IBackgroundWorker {
+export class PollWorker implements IPollWorker {
 
     @inject(TYPES.IPersistenceProvider)
     private persistence: IPersistenceProvider;
@@ -20,9 +20,25 @@ export class PollWorker implements IBackgroundWorker {
     private logger: ILogger;
 
     private processTimer: any;
+    private interval = 10000;
+
+    public setInterval(ms: number) {
+        this.interval = ms;
+    }
+
+    public getInterval() {
+        return this.interval;
+    }
+
+    public updateFromContainer(container: Container) {
+        this.persistence = container.get(TYPES.IPersistenceProvider);
+        this.lockProvider = container.get(TYPES.IDistributedLockProvider);
+        this.queueProvider = container.get(TYPES.IQueueProvider);
+        this.logger = container.get(TYPES.ILogger);
+    }
 
     public start() {        
-        this.processTimer = setInterval(this.process, 10000, this);
+        this.processTimer = setInterval(this.process, this.interval, this);
     }
 
     public stop() {
