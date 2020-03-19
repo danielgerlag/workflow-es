@@ -98,10 +98,11 @@ export class MongoDBPersistence implements IPersistenceProvider {
         return deferred;
     }
 
-    public async getSubscriptions(eventName: string, eventKey: string, asOf: Date): Promise<Array<EventSubscription>> {        
+    public async getSubscriptions(eventName: string, eventKey: string, asOf?: Date): Promise<Array<EventSubscription>> {        
         var self = this;
         var deferred = new Promise<Array<EventSubscription>>((resolve, reject) => {
-            self.subscriptionCollection.find({ eventName: eventName, eventKey: eventKey, subscribeAsOf: { $lt: asOf } })
+            if (asOf === undefined) {
+                self.subscriptionCollection.find({ eventName: eventName, eventKey: eventKey })
                 .toArray((err, data) => {
                     if (err)
                         reject(err);
@@ -109,6 +110,16 @@ export class MongoDBPersistence implements IPersistenceProvider {
                         item.id = item["_id"].toString();
                     resolve(data);
                 });
+            } else {
+                self.subscriptionCollection.find({ eventName: eventName, eventKey: eventKey, subscribeAsOf: { $lt: asOf } })
+                .toArray((err, data) => {
+                    if (err)
+                        reject(err);
+                    for (let item of data)
+                        item.id = item["_id"].toString();
+                    resolve(data);
+                });
+            }
         });
         return deferred;
     }

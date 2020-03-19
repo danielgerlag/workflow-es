@@ -102,11 +102,17 @@ export class MySqlPersistence implements IPersistenceProvider {
     });
     return deferred;
   }
-  public async getSubscriptions(eventName: string, eventKey: string, asOf: Date): Promise<Array<EventSubscription>> {
+  public async getSubscriptions(eventName: string, eventKey: string, asOf?: Date): Promise<Array<EventSubscription>> {
     var deferred = new Promise<Array<EventSubscription>>(
       async (resolve, reject) => {
           try {
-              var instances = await subscriptionCollection.findAll({
+              var instances = asOf === undefined ? await subscriptionCollection.findAll({
+                  where: {
+                      eventName: eventName,
+                      eventKey: eventKey
+                  },
+                  include: [Workflow]
+              }) : await subscriptionCollection.findAll({
                   where: {
                       eventName: eventName,
                       eventKey: eventKey,
