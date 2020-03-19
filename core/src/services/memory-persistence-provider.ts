@@ -40,8 +40,8 @@ export class MemoryPersistenceProvider implements IPersistenceProvider {
         wfes_subscriptions.push(subscription);
     }
 
-    public async getSubscriptions(eventName: string, eventKey: string, asOf: Date): Promise<Array<EventSubscription>> {        
-        return wfes_subscriptions.filter(x => x.eventName == eventName && x.eventKey == eventKey && x.subscribeAsOf <= asOf);
+    public async getSubscriptions(eventName: string, eventKey: string, asOf?: Date): Promise<Array<EventSubscription>> {        
+        return wfes_subscriptions.filter(x => x.eventName == eventName && x.eventKey == eventKey && (asOf ? x.subscribeAsOf <= asOf : true));
     }
 
     public async terminateSubscription(id: string): Promise<void> {

@@ -8,7 +8,7 @@ export interface IPersistenceProvider {
     getRunnableInstances(): Promise<Array<string>>;
 
     createEventSubscription(subscription: EventSubscription): Promise<void>;
-    getSubscriptions(eventName: string, eventKey: string, asOf: Date): Promise<Array<EventSubscription>>;
+    getSubscriptions(eventName: string, eventKey: string, asOf?: Date): Promise<Array<EventSubscription>>;
     terminateSubscription(id: string): Promise<void>;
 
     createEvent(event: Event): Promise<string>;    

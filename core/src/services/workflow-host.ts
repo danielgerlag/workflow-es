@@ -75,7 +75,7 @@ export class WorkflowHost implements IWorkflowHost {
         this.registry.registerWorkflow<TData>(new workflow());
     }
 
-    public async publishEvent(eventName: string, eventKey: string, eventData: any, eventTime: Date): Promise<void> {
+    public async publishEvent(eventName: string, eventKey: string, eventData: any, eventTime?: Date): Promise<void> {
         //todo: check host status        
 
         this.logger.info("Publishing event %s %s", eventName, eventKey);
