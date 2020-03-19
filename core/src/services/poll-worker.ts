@@ -22,7 +22,7 @@ export class PollWorker implements IBackgroundWorker {
     private processTimer: any;
 
     public start() {        
-        this.processTimer = setInterval(this.process, 500, this);
+        this.processTimer = setInterval(this.process, 10000, this);
     }
 
     public stop() {
