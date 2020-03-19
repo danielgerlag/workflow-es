@@ -31,7 +31,7 @@ export class PollWorker implements IBackgroundWorker {
             clearInterval(this.processTimer);
     }
 
-    private async process(self: PollWorker): Promise<void> {
+    private async process(self: PollWorker): Promise<void> {                
         self.logger.info("pollRunnables " + " - now = " + Date.now());
         //TODO: lock
         try {        
