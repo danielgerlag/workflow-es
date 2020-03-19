@@ -22,7 +22,7 @@ export class PollWorker implements IBackgroundWorker {
     private processTimer: any;
 
     public start() {        
-        this.processTimer = setInterval(this.process, 10000, this);
+        this.processTimer = setInterval(this.process, 500, this);
     }
 
     public stop() {
@@ -31,7 +31,7 @@ export class PollWorker implements IBackgroundWorker {
             clearInterval(this.processTimer);
     }
 
-    private async process(self: PollWorker): Promise<void> {                
+    private async process(self: PollWorker): Promise<void> {
         self.logger.info("pollRunnables " + " - now = " + Date.now());
         //TODO: lock
         try {        

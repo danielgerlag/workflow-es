@@ -3,6 +3,6 @@ export class Event {
     public eventName: string;
     public eventKey: string;
     public eventData: any;
-    public eventTime: Date;
+    public eventTime?: Date;
     public isProcessed: boolean;
 }
