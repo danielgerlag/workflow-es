@@ -4,7 +4,7 @@
   "description": "Workflow samples for node.js",
   "dependencies": {
     "ioredis": "^4.6.2",
-    "mongodb": "^2.2.11",
+    "mongodb": "^3.6.1",
     "workflow-es": "^2.2.0",
     "workflow-es-mongodb": "^2.0.0",
     "workflow-es-redis": "^2.0.0"
