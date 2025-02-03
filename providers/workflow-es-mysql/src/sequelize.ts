@@ -1,15 +1,12 @@
 import { Sequelize } from 'sequelize-typescript';
+import { Event } from './models/event';
+import { Subscription } from './models/subscription';
+import { Workflow } from './models/workflow';
 
-export const sequelize = new Sequelize({
-  dialect: 'mysql',
-  operatorsAliases: Sequelize.Op as any,
-  database: 'workflow',
-  username: 'root',
-  password: '',
-  modelPaths: [__dirname + '/models'],
-  pool: {
-    max: 10,
-    min: 1,
-    idle: 10000
-  }
-});
+export async function initializeSequelize(connectionString) {
+  const sequelize = new Sequelize(connectionString);
+
+  await sequelize.addModels([Event, Subscription, Workflow]);
+
+  return sequelize;
+}
