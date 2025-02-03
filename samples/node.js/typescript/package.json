@@ -11,6 +11,6 @@
     "workflow-es": "^2.0.1",
     "workflow-es-mongodb": "^2.0.0",
     "@types/es6-promise": "0.0.32",    
-    "mongodb": "^2.2.11"
+    "mongodb": "^3.6.1"
   }
 }
