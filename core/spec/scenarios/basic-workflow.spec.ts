@@ -1,4 +1,4 @@
-import { configureWorkflow, WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, ConsoleLogger } from "../../src";
+import { configureWorkflow, WorkflowHost, WorkflowBuilder, WorkflowStatus, WorkflowBase, StepBody, StepExecutionContext, ExecutionResult, WorkflowInstance, ConsoleLogger, PollWorker, EventQueueWorker, WorkflowQueueWorker } from "../../src";
 import { MemoryPersistenceProvider } from "../../src/services/memory-persistence-provider";
 import { spinWaitCallback } from "../helpers/spin-wait";
 
@@ -41,6 +41,13 @@ let basicWorkflowScope = {
      let config = configureWorkflow();
      config.useLogger(new ConsoleLogger());
      config.usePersistence(persistence);
+     const pollWorker = new PollWorker();
+     pollWorker.setInterval(500);
+     config.usePollWorker(pollWorker);
+     const eventQueueWorker = new EventQueueWorker();
+     config.useEventQueueWorker(eventQueueWorker);
+     const workflowQueueWorker = new WorkflowQueueWorker();
+     config.useWorkflowQueueWorker(workflowQueueWorker);
      let host = config.getHost();
 
      jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;

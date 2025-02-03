@@ -6,6 +6,9 @@ let TYPES = {
     IPersistenceProvider: Symbol("IPersistenceProvider"),
     IQueueProvider: Symbol("IQueueProvider"),
     IBackgroundWorker: Symbol("IBackgroundWorker"),
+    IEventQueueWorker: Symbol("IEventQueueWorker"),
+    IPollWorker: Symbol("IPollWorker"),
+    IWorkflowQueueWorker: Symbol("IWorkflowQueueWorker"),
     IWorkflowExecutor: Symbol("IWorkflowExecutor"),
     IExecutionResultProcessor: Symbol("IExecutionResultProcessor"),
     IExecutionPointerFactory: Symbol("IExecutionPointerFactory")

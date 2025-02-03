@@ -1,6 +1,6 @@
 import { injectable, inject, multiInject } from "inversify";
 import { WorkflowInstance, WorkflowStatus, ExecutionPointer, EventSubscription, Event } from "../models";
-import { WorkflowBase, IWorkflowRegistry, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IBackgroundWorker, TYPES, ILogger, IExecutionPointerFactory } from "../abstractions";
+import { WorkflowBase, IWorkflowRegistry, IPersistenceProvider, IWorkflowHost, IQueueProvider, QueueType, IDistributedLockProvider, IPollWorker, IEventQueueWorker, IWorkflowQueueWorker, TYPES, ILogger, IExecutionPointerFactory } from "../abstractions";
 import { WorkflowQueueWorker } from "./workflow-queue-worker";
 
 import { MemoryPersistenceProvider } from "./memory-persistence-provider";
@@ -12,10 +12,16 @@ import { NullLogger } from "./null-logger";
 export class WorkflowHost implements IWorkflowHost {
 
     @inject(TYPES.IWorkflowRegistry)
-    private registry : IWorkflowRegistry;
+    private registry: IWorkflowRegistry;
 
-    @multiInject(TYPES.IBackgroundWorker)
-    private workers: IBackgroundWorker[];
+    @inject(TYPES.IPollWorker)
+    private pollWorker: IPollWorker
+    
+    @inject(TYPES.IEventQueueWorker)
+    private eventQueueWorker: IEventQueueWorker
+    
+    @inject(TYPES.IWorkflowQueueWorker)
+    private workflowQueueWorker: IWorkflowQueueWorker
 
     @inject(TYPES.IPersistenceProvider)
     private persistence: IPersistenceProvider;
@@ -24,17 +30,17 @@ export class WorkflowHost implements IWorkflowHost {
     private lockProvider: IDistributedLockProvider;
     
     @inject(TYPES.IQueueProvider)
-    private queueProvider:  IQueueProvider = new SingleNodeQueueProvider();
+    private queueProvider: IQueueProvider = new SingleNodeQueueProvider();
 
     @inject(TYPES.IExecutionPointerFactory)
-    private pointerFactory : IExecutionPointerFactory;
+    private pointerFactory: IExecutionPointerFactory;
 
     @inject(TYPES.ILogger)
     private logger: ILogger;
 
     public start(): Promise<void> {        
         this.logger.log("Starting workflow host...");
-        for (let worker of this.workers) {
+        for (let worker of [ this.pollWorker, this.eventQueueWorker, this.workflowQueueWorker ]) {
             worker.start();
         }
         this.registerCleanCallbacks();
@@ -44,7 +50,7 @@ export class WorkflowHost implements IWorkflowHost {
     public stop() {
         this.logger.log("Stopping workflow host...");
 
-        for (let worker of this.workers) {
+        for (let worker of [ this.pollWorker, this.eventQueueWorker, this.workflowQueueWorker ]) {
             worker.stop();
         }
     }
