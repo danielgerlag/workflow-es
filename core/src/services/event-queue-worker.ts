@@ -57,7 +57,7 @@ export class EventQueueWorker implements IBackgroundWorker {
             if (gotLock) {
                 try {
                     let evt = await self.persistence.getEvent(eventId);
-                    if (evt.eventTime <= new Date())
+                    if (evt.eventTime === undefined || evt.eventTime <= new Date())
                     {
                         let subs = await self.persistence.getSubscriptions(evt.eventName, evt.eventKey, evt.eventTime);
                         let success = true;
